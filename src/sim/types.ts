@@ -123,6 +123,24 @@ export interface Patient {
   turnedAway: boolean;
 }
 
+export type LunchOutcome = 'onTime' | 'late' | 'missed';
+export type BalikOutcome = 'onTime' | 'overtime';
+
+export interface DayReport {
+  seed: number;
+  lunch: { outcome: LunchOutcome; perDoctor: { staffId: StaffId; lunchStart: Minute | null }[] };
+  balik: { outcome: BalikOutcome; lastPatientDone: Minute | null; overtimeMinutes: number };
+  /** 0..100, one decimal. */
+  patientSatisfaction: number;
+  /** 0..100, one decimal. */
+  hcwSatisfaction: number;
+  waitByVisitType: Record<VisitTypeId, { mean: number; max: number; count: number }>;
+  idleByStaff: Record<StaffId, { morning: number; total: number }>;
+  peakQueue: Record<StationId, { size: number; at: Minute }>;
+  turnedAway: number;
+  unfinished: number;
+}
+
 export interface DayPlan {
   seed: number;
   roster: Record<StationId, StaffId[]>;
