@@ -15,5 +15,6 @@
   "colourDoctorMultiplier": { "putih": 1, "hijau": 1, "kuning": 1.3, "merah": 1.6 },
   "ccmsRegistrationMultiplier": 2,
   "printerRegistrationExtra": 1,
-  "printerPharmacyExtra": 2
+  "printerPharmacyExtra": 2,
+  "midDayChangePenalty": 5
 }

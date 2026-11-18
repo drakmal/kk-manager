@@ -26,8 +26,41 @@ export function lunchOutcome(starts: (Minute | null)[]): LunchOutcome {
 export function staffScore(s: StaffState, t: Tuning): number {
   const lunchPenalty = s.lunchStart === null ? t.missedLunchPenalty : s.lunchStart > LUNCH_START ? t.lateLunchPenalty : 0;
   return clamp(
-    100 - s.overloadMinutes * t.overloadPenaltyPerMinute - lunchPenalty - s.overtimeMinutes * t.overtimePenaltyPerMinute,
+    100 -
+      s.overloadMinutes * t.overloadPenaltyPerMinute -
+      lunchPenalty -
+      s.overtimeMinutes * t.overtimePenaltyPerMinute -
+      s.changeCount * t.midDayChangePenalty,
   );
+}
+
+/**
+ * Scores while the day is still running, for the HUD bars. Patients still
+ * waiting or being served are scored as if they finished now. A lunch that
+ * hasn't happened yet isn't penalised until the late-lunch cut-off passes.
+ */
+export function liveScores(
+  sim: Sim,
+  data: GameData,
+): { patient: number; hcw: number; lunch: LunchOutcome | 'pending' } {
+  const { tuning } = data;
+  const now = sim.now;
+  const lunchDecided = now > tuning.lunchLateCutoff;
+
+  const arrived = sim.patients.filter((p) => p.turnedAway || p.doneAt !== null || Math.max(p.arrival, 420) < now);
+  const patient = mean(arrived.map((p) => patientScore(p.doneAt === null && !p.turnedAway ? { ...p, doneAt: now } : p, tuning)), 100);
+
+  const roleOf = new Map(data.stations.map((s) => [s.id, s.role]));
+  const rostered = sim.staff.filter((s) => s.station !== null);
+  const hcw = mean(
+    rostered.map((s) => staffScore(s.lunchStart === null && !lunchDecided ? { ...s, lunchStart: LUNCH_START } : s, tuning)),
+    100,
+  );
+
+  const starts = rostered.filter((s) => roleOf.get(s.station!) === 'doctor').map((s) => s.lunchStart);
+  const lunch = now < LUNCH_START || (!lunchDecided && starts.some((s) => s === null)) ? 'pending' : lunchOutcome(starts);
+
+  return { patient: round1(patient), hcw: round1(hcw), lunch };
 }
 
 export function buildReport(sim: Sim, data: GameData, plan: DayPlan): DayReport {

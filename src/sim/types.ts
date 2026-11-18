@@ -73,6 +73,15 @@ export interface Tuning {
   ccmsRegistrationMultiplier: number;
   printerRegistrationExtra: number;
   printerPharmacyExtra: number;
+  /** Staff satisfaction points lost per mid-day SOP or roster change. */
+  midDayChangePenalty: number;
+}
+
+/** A mid-day change to the plan. It takes effect after the briefing delay. */
+export interface PlanChange {
+  sop?: SopSettings;
+  /** Listed stations get exactly these staff (capped at seats); people moved off a listed station are unseated. */
+  roster?: Record<StationId, StaffId[]>;
 }
 
 export interface GameData {

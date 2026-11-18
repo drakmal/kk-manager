@@ -86,5 +86,6 @@ export function validateGameData(raw: unknown): GameData {
   }
 
   if (!data.tuning || typeof data.tuning.hardStop !== 'number') fail('tuning missing');
+  if (typeof data.tuning.midDayChangePenalty !== 'number') fail('tuning.midDayChangePenalty missing');
   return data;
 }

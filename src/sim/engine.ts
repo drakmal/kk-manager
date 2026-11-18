@@ -1,7 +1,7 @@
 import { generatePatients } from './patients';
 import { createRng, type Rng } from './rng';
 import { filterRoute } from './routing';
-import type { DayPlan, GameData, Minute, Patient, PlannedStep, StaffId, StationDef, StationId } from './types';
+import type { DayPlan, GameData, Minute, Patient, PlanChange, PlannedStep, StaffId, StationDef, StationId } from './types';
 
 export const DAY_START: Minute = 420; // 07:00, the crowd starts forming
 export const CLINIC_OPENS: Minute = 480; // 08:00
@@ -25,6 +25,8 @@ export interface StaffState {
   idleMorning: number;
   overloadMinutes: number;
   overtimeMinutes: number;
+  /** Mid-day plan changes this person has had to absorb. */
+  changeCount: number;
 }
 
 export interface SimSnapshot {
@@ -46,6 +48,9 @@ export interface Sim {
   readonly patients: readonly Patient[];
   readonly staff: readonly StaffState[];
   readonly peakQueue: Readonly<Record<StationId, { size: number; at: Minute }>>;
+  /** Schedules a plan change for now + briefing delay. Changes apply in the order they were made. */
+  applyChange(change: PlanChange): { effectiveAt: Minute };
+  readonly pendingChanges: readonly { change: PlanChange; at: Minute }[];
 }
 
 export interface SimOptions {
@@ -82,10 +87,12 @@ export interface EngineInternals {
 
 export function createSim(
   data: GameData,
-  plan: DayPlan,
+  planIn: DayPlan,
   options: SimOptions = {},
   makeHooks?: (internals: EngineInternals) => Partial<EngineHooks>,
 ): Sim {
+  // The sim owns its copy: mid-day changes must never touch the caller's plan.
+  const plan: DayPlan = structuredClone(planIn);
   const rng = createRng(plan.seed);
   const patients: Patient[] = options.patients
     ? structuredClone(options.patients)
@@ -115,7 +122,41 @@ export function createSim(
     idleMorning: 0,
     overloadMinutes: 0,
     overtimeMinutes: 0,
+    changeCount: 0,
   }));
+
+  const pendingChanges: { change: PlanChange; at: Minute }[] = [];
+  /** Staff waiting to move (between patients) after a roster change: staff id → new station or null. */
+  const pendingMoves = new Map<StaffId, StationId | null>();
+
+  const applyDueChanges = (t: Minute) => {
+    while (pendingChanges.length > 0 && pendingChanges[0]!.at <= t) {
+      const { change } = pendingChanges.shift()!;
+      if (change.sop) plan.sop = structuredClone(change.sop);
+      if (change.roster) {
+        const listed = new Set(Object.keys(change.roster));
+        const target = new Map<StaffId, StationId>();
+        for (const station of data.stations) {
+          const ids = change.roster[station.id];
+          if (!ids) continue;
+          for (const id of ids.filter((i) => !target.has(i)).slice(0, station.seats)) target.set(id, station.id);
+        }
+        for (const s of staff) {
+          const next = target.get(s.id) ?? (s.station !== null && listed.has(s.station) ? null : s.station);
+          if (next !== s.station) pendingMoves.set(s.id, next);
+          else pendingMoves.delete(s.id);
+        }
+      }
+      for (const s of staff) if (s.station !== null) s.changeCount += 1;
+    }
+    for (const [id, next] of [...pendingMoves]) {
+      const s = staff.find((p) => p.id === id)!;
+      if (s.servingPatient === null) {
+        s.station = next;
+        pendingMoves.delete(id);
+      }
+    }
+  };
 
   const peakQueue: Record<StationId, { size: number; at: Minute }> = {};
   for (const s of data.stations) peakQueue[s.id] = { size: 0, at: DAY_START };
@@ -190,7 +231,8 @@ export function createSim(
     const t = now;
     const { tuning } = data;
 
-    // 1. Event hooks.
+    // 1. Mid-day plan changes that are due, then event hooks.
+    applyDueChanges(t);
     hooks.beforeMinute(t);
 
     // 2. Arrivals. Anyone "arriving" before the day starts joins the crowd at DAY_START.
@@ -310,5 +352,11 @@ export function createSim(
     patients,
     staff,
     peakQueue,
+    applyChange: (change) => {
+      const at = now + data.tuning.briefingDelayMinutes;
+      pendingChanges.push({ change: structuredClone(change), at });
+      return { effectiveAt: at };
+    },
+    pendingChanges,
   };
 }

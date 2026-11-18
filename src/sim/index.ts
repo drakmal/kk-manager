@@ -7,5 +7,5 @@ export { generatePatients, makePatient } from './patients';
 export { filterRoute } from './routing';
 export { createSim, type Sim, type SimOptions, type SimSnapshot, type StaffState } from './engine';
 export { createDaySim, isActive, serviceMinutes } from './events';
-export { buildReport, lunchOutcome, patientScore, staffScore } from './scoring';
+export { buildReport, liveScores, lunchOutcome, patientScore, staffScore } from './scoring';
 export { runDay } from './day';
