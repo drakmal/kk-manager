@@ -1,0 +1,19 @@
+:root {
+  --bg: #f4f1ea;
+  --panel: #ffffff;
+  --ink: #26323d;
+  --muted: #66717d;
+  --line: #e2ddd2;
+  --accent: #1f4e5a;
+  --accent-ink: #ffffff;
+  --warn-bg: #fff8e6;
+  --warn-line: #e0a83a;
+  --warn-ink: #7a4b00;
+  --bad: #c0392b;
+  --good: #2f9e52;
+  --font: Nunito, 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); min-width: 1024px; }
+.app { min-height: 100vh; }
+button, select, input { font: inherit; }

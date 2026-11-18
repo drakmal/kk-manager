@@ -7,15 +7,23 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "sim": "tsx scripts/sim-day.ts"
+    "sim": "tsx scripts/sim-day.ts",
+    "dev": "vite",
+    "build": "vite build && node scripts/check-size.mjs",
+    "preview": "vite preview"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@testing-library/preact": "^3.2.6",
     "@types/node": "^26.6.6",
+    "happy-dom": "^21.0.4",
+    "preact": "^11.2.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
+    "vite": "^8.3.8",
     "vitest": "^5.1.1"
   }
 }
