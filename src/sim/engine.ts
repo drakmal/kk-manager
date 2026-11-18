@@ -193,9 +193,9 @@ export function createSim(
     // 1. Event hooks.
     hooks.beforeMinute(t);
 
-    // 2. Arrivals.
+    // 2. Arrivals. Anyone "arriving" before the day starts joins the crowd at DAY_START.
     for (const p of patients) {
-      if (p.arrival !== t || p.doneAt !== null || p.turnedAway) continue;
+      if (Math.max(p.arrival, DAY_START) !== t || p.doneAt !== null || p.turnedAway) continue;
       if (t > REGISTRATION_CLOSES) {
         p.turnedAway = true;
         continue;

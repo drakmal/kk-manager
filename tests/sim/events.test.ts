@@ -86,6 +86,15 @@ test('emergency walk-in removes one OPD doctor for its duration', () => {
   }
 });
 
+test('two overlapping emergencies take two different OPD doctors', () => {
+  const sim = createDaySim(data, plan(7, (p) => {
+    p.events.push({ kind: 'emergencyWalkIn', at: 600, minutes: [40, 40] });
+    p.events.push({ kind: 'emergencyWalkIn', at: 610, minutes: [40, 40] });
+  }));
+  while (sim.now <= 610) sim.step();
+  expect(sim.staff.filter((s) => s.station === 'opdDoctor' && s.unavailableUntil !== null)).toHaveLength(2);
+});
+
 test('a doctor away on an emergency does not start lunch until back', () => {
   const sim = finish(createDaySim(data, plan(8, (p) => p.events.push({ kind: 'emergencyWalkIn', at: 770, minutes: [45, 45] }))));
   const away = sim.staff.find((s) => s.unavailableUntil !== null)!;

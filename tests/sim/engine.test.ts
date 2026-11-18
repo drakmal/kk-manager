@@ -53,6 +53,12 @@ test('arrival at 990 registered, 991 turned away', () => {
   expect(sim.patients.find((p) => p.id === 1)!.turnedAway).toBe(true);
 });
 
+test('a patient arriving before 07:00 joins the crowd at 07:00 instead of vanishing', () => {
+  const sim = finish(createSim(fixtureData, fixturePlan, { patients: [scripted(0, 400, [['a', 2], ['b', 3]])] }));
+  expect(sim.patients[0]!.doneAt).toBe(485);
+  expect(sim.now).toBeLessThan(1140);
+});
+
 test('lunch on time when free at 13:00', () => {
   const doc = staffOf(finish(createSim(fixtureData, fixturePlan, { patients: [] })), 'doc1');
   expect([doc.lunchStart, doc.lunchEnd]).toEqual([780, 840]);

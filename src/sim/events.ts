@@ -38,7 +38,8 @@ function eventHooks(x: EngineInternals): Partial<EngineHooks> {
   const opdDoctors = () => staff.filter((s) => s.station === OPD_DOCTOR).sort(byStaffOrder);
 
   const startEmergency = (t: Minute, range: [number, number]) => {
-    const doctor = opdDoctors().find((s) => !s.onLunch);
+    const free = (s: StaffState) => !s.onLunch && (s.unavailableUntil === null || t >= s.unavailableUntil);
+    const doctor = opdDoctors().find(free);
     if (!doctor) return;
     const duration = rng.int(range[0], range[1]);
     // A doctor who is mid-consultation finishes that patient first, then goes.
