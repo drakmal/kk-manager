@@ -74,6 +74,8 @@ export interface EngineInternals {
   queues: Map<StationId, QueueEntry[]>;
   stationById: Map<StationId, StationDef>;
   now(): Minute;
+  /** Adds a patient mid-day (influx). Their arrival must be ≥ the current minute. */
+  addPatient(patient: Patient): void;
   enqueue(patient: Patient, station: StationId, t: Minute): void;
   isAvailable(s: StaffState, t: Minute): boolean;
 }
@@ -134,6 +136,10 @@ export function createSim(
   const internals: EngineInternals = {
     data, plan, rng, patients, staff, queues, stationById,
     now: () => now,
+    addPatient: (p) => {
+      patients.push(p);
+      patientById.set(p.id, p);
+    },
     enqueue,
     isAvailable,
   };
@@ -225,6 +231,7 @@ export function createSim(
         t >= LUNCH_START &&
         t <= tuning.lunchLateCutoff &&
         s.servingPatient === null &&
+        (s.unavailableUntil === null || t >= s.unavailableUntil) &&
         queues.get(s.station)!.length === 0
       ) {
         s.onLunch = true;
