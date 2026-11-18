@@ -97,6 +97,32 @@ export type ClinicEvent =
   | { kind: 'influx'; at: Minute; count: number; visitType: VisitTypeId }
   | { kind: 'emergencyWalkIn'; at: Minute; minutes: [number, number] };
 
+/** A step with its duration already drawn for this patient. */
+export interface PlannedStep {
+  station: StationId;
+  minutes: number;
+  bypassable: boolean;
+}
+
+export interface Patient {
+  id: number;
+  visitType: VisitTypeId;
+  unit: UnitId;
+  arrival: Minute;
+  priority: PriorityGroup[];
+  colour: ColourCode | null;
+  /** Full planned path, including the steps before registration. */
+  steps: PlannedStep[];
+  /** Set when registration finishes: the steps after registration, filtered by SOP. */
+  route: PlannedStep[] | null;
+  /** Indexes `steps` until `route` is set, then indexes `route` (reset to 0). */
+  stepIndex: number;
+  waitMinutes: number;
+  crowdMinutes: number;
+  doneAt: Minute | null;
+  turnedAway: boolean;
+}
+
 export interface DayPlan {
   seed: number;
   roster: Record<StationId, StaffId[]>;
