@@ -7,8 +7,9 @@ const data = loadGameData();
 
 test('count matches daily volume', () => {
   const ps = generatePatients(data, defaultDayPlan(data, 1), createRng(1));
-  expect(ps.filter((p) => p.unit === 'mch')).toHaveLength(40);
-  expect(ps.filter((p) => p.unit === 'opd')).toHaveLength(120);
+  // Read the volume from the data: it comes from the Google Sheet and will change.
+  expect(ps.filter((p) => p.unit === 'mch')).toHaveLength(data.arrivals.dailyVolume.mch);
+  expect(ps.filter((p) => p.unit === 'opd')).toHaveLength(data.arrivals.dailyVolume.opd);
 });
 
 test('deterministic', () => {
@@ -60,8 +61,9 @@ test('temujanji spreads appointment arrivals into slots', () => {
   const plan = defaultDayPlan(data, 2);
   plan.sop.temujanji = { enabled: true, from: 480, to: 720, slotMinutes: 30, perSlot: 6 };
   const appt = generatePatients(data, plan, createRng(2)).filter((p) => p.unit === 'mch');
-  expect(appt).toHaveLength(40);
+  const n = data.arrivals.dailyVolume.mch; // every MCH visit type has an appointment
+  expect(appt).toHaveLength(n);
   expect(appt.filter((p) => p.arrival < 465)).toHaveLength(0);
-  // 40 patients, 6 per slot → the 7th slot (08:00 + 6×30 = 11:00) is the last one used.
-  expect(Math.max(...appt.map((p) => p.arrival))).toBeLessThanOrEqual(660 + 5);
+  // 6 per slot from 08:00 to 12:00 holds 48 patients; up to that, the last slot used is 08:00 + floor((n-1)/6)×30.
+  if (n <= 48) expect(Math.max(...appt.map((p) => p.arrival))).toBeLessThanOrEqual(480 + Math.floor((n - 1) / 6) * 30 + 5);
 });
