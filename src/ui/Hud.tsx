@@ -33,9 +33,9 @@ export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName }
   return (
     <div class="hud" role="toolbar" aria-label="Clinic controls">
       <span class="clock">{dayName} {fmt(sim.now)}</span>
-      <button type="button" aria-pressed={paused} onClick={() => c.pause()}>Pause</button>
+      <button type="button" aria-pressed={paused} title="Space" onClick={() => c.pause()}>Pause</button>
       {SPEEDS.map((s) => (
-        <button key={s} type="button" aria-pressed={!paused && c.clock.speed === s} onClick={() => setSpeed(s)}>
+        <button key={s} type="button" aria-pressed={!paused && c.clock.speed === s} title={`Key ${s}`} onClick={() => setSpeed(s)}>
           {s}×
         </button>
       ))}

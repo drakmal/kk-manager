@@ -63,3 +63,34 @@ test('low graphics toggle survives a localStorage that throws', () => {
   fireEvent.click(box);
   expect((screen.getByLabelText('Low graphics') as HTMLInputElement).checked).toBe(true);
 });
+
+test('Space pauses and resumes; 1, 2 and 4 set the speed', () => {
+  const c = started();
+  render(<GameScreen controller={c} data={data} dayName="Isnin" />);
+  fireEvent.keyDown(window, { key: ' ', code: 'Space' });
+  expect(c.phase).toBe('paused');
+  fireEvent.keyDown(window, { key: ' ', code: 'Space' });
+  expect(c.phase).toBe('running');
+  fireEvent.keyDown(window, { key: '4' });
+  expect(c.clock.speed).toBe(4);
+  fireEvent.keyDown(window, { key: '2' });
+  expect(c.clock.speed).toBe(2);
+  fireEvent.keyDown(window, { key: ' ' });
+  fireEvent.keyDown(window, { key: '1' });
+  expect(c.phase).toBe('running');
+  expect(c.clock.speed).toBe(1);
+});
+
+test('shortcuts are off while a popup is open, and when typing in a control', () => {
+  const c = started([at(500)]);
+  render(<GameScreen controller={c} data={data} dayName="Isnin" />);
+  fireEvent.click(screen.getByRole('button', { name: 'Skip ahead' }));
+  expect(screen.getByRole('dialog')).toBeTruthy();
+  fireEvent.keyDown(window, { key: ' ' });
+  fireEvent.keyDown(window, { key: '4' });
+  expect(c.phase).toBe('running');
+  expect(c.clock.speed).toBe(1);
+  fireEvent.click(screen.getByRole('button', { name: 'OK' }));
+  fireEvent.keyDown(screen.getByLabelText('Low graphics'), { key: ' ' });
+  expect(c.phase).toBe('running');
+});

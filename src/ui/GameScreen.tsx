@@ -1,4 +1,5 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import type { Speed } from '../game/clock';
 import type { DayController } from '../game/controller';
 import type { GameData } from '../sim/index';
 import { ClinicCanvas } from './ClinicCanvas';
@@ -30,8 +31,42 @@ function writeLowGraphics(on: boolean): void {
   }
 }
 
+const SPEED_KEYS: Record<string, Speed> = { '1': 1, '2': 2, '4': 4 };
+/** Typing in a control (the low-graphics box, a future text field) keeps its own keys. */
+const isControl = (t: EventTarget | null) => t instanceof HTMLElement && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName);
+
 export function GameScreen({ controller, data, dayName }: Props) {
   const c = useController(controller);
+
+  // Space pauses or resumes; 1, 2 and 4 set the speed. Off while a popup asks for a choice.
+  useEffect(() => {
+    const isSpace = (e: KeyboardEvent) => e.key === ' ' || e.code === 'Space';
+    const onKey = (e: KeyboardEvent) => {
+      if (controller.popup || isControl(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isSpace(e)) {
+        e.preventDefault();
+        if (e.repeat) return;
+        if (controller.phase === 'paused') controller.resume();
+        else controller.pause();
+        return;
+      }
+      const speed = SPEED_KEYS[e.key];
+      if (speed) {
+        controller.setSpeed(speed);
+        if (controller.phase === 'paused') controller.resume();
+      }
+    };
+    // Stop Space from also "clicking" whichever HUD button has focus.
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (isSpace(e) && !controller.popup && !isControl(e.target)) e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, [controller]);
   const [lowGraphics, setLowGraphics] = useState(readLowGraphics);
   const onLowGraphics = (on: boolean) => {
     setLowGraphics(on);

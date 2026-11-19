@@ -19,7 +19,7 @@ const ctx = (sim: Sim, over: Partial<DayContext> = {}): DayContext => ({
 describe('idleDoctor', () => {
   test('is due at 08:30 when mothers wait upstream and an MCH doctor has seen nobody', () => {
     const sim = simAt(510);
-    expect(sim.staff.find((s) => s.id === 'mo1')!.lastStartAt).toBeNull();
+    expect(sim.staff.some((s) => s.station === 'mchDoctor' && s.lastStartAt === null)).toBe(true);
     expect(def('idleDoctor').due(ctx(sim))).toBe(true);
     expect(def('idleDoctor').build(ctx(sim))).toEqual({
       id: 'idleDoctor@510', from: 'Kak Ida (PT)', text: 'Pesakit semakin ramai mendaftar, doktor belum terima pesakit.',

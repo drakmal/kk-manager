@@ -21,6 +21,11 @@ export interface StationDef {
   opensAt: Minute;
   /** Rooms that share a routing name (e.g. OPD Bilik 1 and 2 are group "opdDoctor"). Each room keeps its own queue. */
   group?: string;
+  /**
+   * A fixed lunch break [from, to) when the station closes even if patients are queuing
+   * (registration counters: 13:00–13:30). Anyone mid-service finishes that patient first.
+   */
+  lunchBreak?: [Minute, Minute];
 }
 
 export interface StepDef {

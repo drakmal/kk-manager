@@ -96,3 +96,41 @@ test('draw paints onto a 2D context, scaled by devicePixelRatio', () => {
   expect(calls[0]).toBe('setTransform:6');
   expect(calls.some((c) => c.startsWith('fillText'))).toBe(true);
 });
+
+test('waiting areas have no chair grid: chairs only in front of desks', () => {
+  const seats = layout.rooms.reduce((n, r) => n + r.seats.length, 0);
+  expect(list().filter((c) => c.owner === 'chair')).toHaveLength(seats);
+});
+
+test('speech bubbles never overlap each other', () => {
+  const crowd: typeof scene = {
+    ...scene,
+    people: Array.from({ length: 8 }, (_, i) => ({
+      key: `p${100 + i}`, kind: 'patient' as const, x: 20 + i, y: 7, pose: 'sit' as const, look: scene.people[0]!.look,
+      tag: null, baby: false, bubble: 'Lama gila tunggu ni…', mood: '😠' as const,
+    })),
+  };
+  const bubbles = buildDrawList(crowd, view, { lowGraphics: false, dpr: 1, highlight: null }).filter((c) => c.op === 'bubble');
+  expect(bubbles.length).toBeGreaterThan(0);
+  expect(bubbles.length).toBeLessThan(8);
+  const boxes = bubbles.map((b) => {
+    if (b.op !== 'bubble') throw new Error();
+    const w = b.text.length * b.size * 0.55 + b.size * 1.4;
+    return { l: b.x - w / 2, r: b.x + w / 2, t: b.y - b.size * 2, btm: b.y + 7 };
+  });
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i]!, b = boxes[j]!;
+      expect(a.r <= b.l || b.r <= a.l || a.btm <= b.t || b.btm <= a.t).toBe(true);
+    }
+  }
+});
+
+test('a bubble sits above its speaker’s mood emoji', () => {
+  const one: typeof scene = { ...scene, people: [{ ...scene.people.find((p) => p.mood)!, bubble: 'Bila nak giliran saya?' }] };
+  const cmds = buildDrawList(one, view, { lowGraphics: false, dpr: 1, highlight: null });
+  const bubble = cmds.find((c) => c.op === 'bubble')!;
+  const mood = cmds.find((c) => c.tag === 'mood')!;
+  if (bubble.op !== 'bubble' || mood.op !== 'text') throw new Error();
+  expect(bubble.y + 7).toBeLessThanOrEqual(mood.y - mood.size); // tail tip above the top of the emoji
+});

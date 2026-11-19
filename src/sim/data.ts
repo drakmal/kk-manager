@@ -41,6 +41,7 @@ export function validateGameData(raw: unknown): GameData {
   for (const s of data.stations) {
     if (stationIds.has(s.id)) fail(`duplicate station id "${s.id}"`);
     stationIds.add(s.id);
+    if (s.lunchBreak !== undefined && !isRange(s.lunchBreak)) fail(`station "${s.id}" has a bad lunch break ${JSON.stringify(s.lunchBreak)}`);
     if (s.group !== undefined) {
       const role = groupRole.get(s.group);
       if (role !== undefined && role !== s.role) fail(`group "${s.group}" mixes roles ${role} and ${s.role}`);

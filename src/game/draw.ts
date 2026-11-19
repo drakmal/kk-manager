@@ -76,7 +76,6 @@ export function buildDrawList(scene: Scene, view: View, opts: DrawOptions): Draw
       out.push({ op: 'poly', pts: rect(seat.x - 0.1, seat.y + 0.55, 1.2, 0.45), fill: FURNITURE.desk, stroke: shade(FURNITURE.desk, 0.75), lineWidth: 1, tag: 'furniture', owner: `desk:${r.station}`, part: `seat${i}` }));
     if (opts.lowGraphics) continue;
     for (const c of r.chairs) chair(c.x, c.y);
-    for (const q of r.queue) chair(q.x, q.y);
     for (const f of r.furniture) {
       const color = FURNITURE[f.kind];
       const owner = `${f.kind}:${r.station}`;
@@ -90,7 +89,6 @@ export function buildDrawList(scene: Scene, view: View, opts: DrawOptions): Draw
       if (f.kind === 'bed') out.push({ op: 'poly', pts: rect(f.x + 0.1, f.y + 0.1, f.w - 0.2, Math.min(0.5, f.h * 0.25)), fill: '#dfe7ef', tag: 'furniture', owner });
     }
   }
-  if (!opts.lowGraphics) for (const o of scene.overflow) chair(o.x, o.y);
 
   // 4. Room labels, along the bottom edge inside each room.
   for (const r of scene.rooms) {
@@ -102,14 +100,31 @@ export function buildDrawList(scene: Scene, view: View, opts: DrawOptions): Draw
   const overlays: DrawCmd[] = [];
   const moods: DrawCmd[] = [];
   const bubbles: DrawCmd[] = [];
+  const moodSize = Math.max(10, 13 * s);
+  const bubbleSize = 12 * Math.max(0.8, Math.min(1.4, s));
+  /** Bubbles already placed, as boxes; a bubble that would overlap one is left out. */
+  const placed: { l: number; r: number; t: number; b: number }[] = [];
+  const bubbleBox = (x: number, y: number, text: string) => {
+    const w = text.length * bubbleSize * 0.55 + bubbleSize * 1.4;
+    return { l: x - w / 2, r: x + w / 2, t: y - bubbleSize * 2, b: y + 7 };
+  };
   const people = [...scene.people].sort((a, b) => a.y - b.y || a.x - b.x);
   for (const person of people) {
     const { cmds, headY } = drawPerson(person, P, s, opts.lowGraphics);
     out.push(...cmds);
     const p = P(person.x + 0.5, person.y + 0.5);
     if (person.tag) overlays.push({ op: 'ellipse', x: p.sx + 8 * s, y: p.sy + 6 * s, rx: 3.5 * s, ry: 3.5 * s, fill: person.tag, stroke: '#ffffff', tag: 'dot', owner: person.key });
-    if (person.mood) moods.push({ op: 'text', x: p.sx, y: headY - 8 * s, text: person.mood, size: Math.max(10, 13 * s), fill: '#000000', tag: 'mood', owner: person.key });
-    if (person.bubble) bubbles.push({ op: 'bubble', x: p.sx, y: headY - 22 * s, text: person.bubble, size: 12 * Math.max(0.8, Math.min(1.4, s)), tag: 'bubble', owner: person.key });
+    const moodY = headY - 8 * s;
+    if (person.mood) moods.push({ op: 'text', x: p.sx, y: moodY, text: person.mood, size: moodSize, fill: '#000000', tag: 'mood', owner: person.key });
+    if (person.bubble) {
+      // The tail tip sits just above the emoji.
+      const y = (person.mood ? moodY - moodSize : headY - 6 * s) - 9;
+      const box = bubbleBox(p.sx, y, person.bubble);
+      if (!placed.some((o) => box.l < o.r && o.l < box.r && box.t < o.b && o.t < box.b)) {
+        placed.push(box);
+        bubbles.push({ op: 'bubble', x: p.sx, y, text: person.bubble, size: bubbleSize, tag: 'bubble', owner: person.key });
+      }
+    }
   }
   out.push(...overlays, ...moods, ...bubbles);
   return out;

@@ -303,6 +303,20 @@ export function createSim(
     // 4. Lunch.
     for (const s of staff) {
       if (s.station === null) continue;
+      const fixedBreak = stationById.get(s.station)!.lunchBreak;
+      if (fixedBreak) {
+        // A counter's break is its lunch, on the clock: it starts at `from` (once the current patient is done).
+        const [from, to] = fixedBreak;
+        if (s.onLunch && t >= to) {
+          s.onLunch = false;
+          s.lunchEnd = t;
+        }
+        if (s.lunchStart === null && t >= from && t < to && s.servingPatient === null) {
+          s.onLunch = true;
+          s.lunchStart = from;
+        }
+        continue;
+      }
       if (s.onLunch && s.lunchStart !== null && t >= Math.max(LUNCH_END, s.lunchStart + tuning.lunchMinMinutes)) {
         s.onLunch = false;
         s.lunchEnd = t;
