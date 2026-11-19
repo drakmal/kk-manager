@@ -1,0 +1,408 @@
+{
+ "1": {
+  "seed": 1,
+  "lunch": {
+   "outcome": "late",
+   "perDoctor": [
+    {
+     "staffId": "mo1",
+     "lunchStart": 804
+    },
+    {
+     "staffId": "mo2",
+     "lunchStart": 780
+    },
+    {
+     "staffId": "mo3",
+     "lunchStart": 817
+    },
+    {
+     "staffId": "mo4",
+     "lunchStart": 784
+    },
+    {
+     "staffId": "mo5",
+     "lunchStart": 820
+    },
+    {
+     "staffId": "mo6",
+     "lunchStart": 824
+    }
+   ]
+  },
+  "balik": {
+   "outcome": "overtime",
+   "lastPatientDone": 1025,
+   "overtimeMinutes": 5
+  },
+  "patientSatisfaction": 23,
+  "hcwSatisfaction": 90.1,
+  "waitByVisitType": {
+   "opd_general": {
+    "mean": 104.5,
+    "max": 154,
+    "count": 120
+   },
+   "anc_nurse_doctor": {
+    "mean": 88.8,
+    "max": 132,
+    "count": 10
+   },
+   "anc_doctor_only": {
+    "mean": 86.5,
+    "max": 141,
+    "count": 11
+   },
+   "anc_nurse_only": {
+    "mean": 47,
+    "max": 113,
+    "count": 12
+   },
+   "anc_booking": {
+    "mean": 88,
+    "max": 118,
+    "count": 3
+   },
+   "postnatal": {
+    "mean": 125,
+    "max": 125,
+    "count": 1
+   },
+   "immunisation": {
+    "mean": 71,
+    "max": 71,
+    "count": 1
+   },
+   "child_health": {
+    "mean": 25.5,
+    "max": 43,
+    "count": 2
+   }
+  },
+  "idleByStaff": {
+   "mo1": {
+    "morning": 78,
+    "total": 319
+   },
+   "mo2": {
+    "morning": 92,
+    "total": 363
+   },
+   "mo3": {
+    "morning": 20,
+    "total": 140
+   },
+   "mo4": {
+    "morning": 27,
+    "total": 225
+   },
+   "mo5": {
+    "morning": 41,
+    "total": 250
+   },
+   "mo6": {
+    "morning": 73,
+    "total": 313
+   },
+   "jk1": {
+    "morning": 15,
+    "total": 94
+   },
+   "jk2": {
+    "morning": 20,
+    "total": 176
+   },
+   "jm1": {
+    "morning": 35,
+    "total": 322
+   },
+   "jm2": {
+    "morning": 99,
+    "total": 447
+   },
+   "jm3": {
+    "morning": 6,
+    "total": 160
+   },
+   "ppk1": {
+    "morning": 9,
+    "total": 320
+   },
+   "pt1": {
+    "morning": 6,
+    "total": 317
+   },
+   "pt2": {
+    "morning": 1,
+    "total": 256
+   },
+   "pt3": {
+    "morning": 2,
+    "total": 286
+   },
+   "jtmp1": {
+    "morning": 115,
+    "total": 411
+   },
+   "ppf1": {
+    "morning": 34,
+    "total": 186
+   },
+   "ppf2": {
+    "morning": 51,
+    "total": 248
+   }
+  },
+  "peakQueue": {
+   "primaryTriage": {
+    "size": 46,
+    "at": 481
+   },
+   "mchRegistration": {
+    "size": 6,
+    "at": 522
+   },
+   "mchTriage": {
+    "size": 2,
+    "at": 612
+   },
+   "ancNurse": {
+    "size": 11,
+    "at": 614
+   },
+   "mchDoctor": {
+    "size": 1,
+    "at": 529
+   },
+   "immunisation": {
+    "size": 0,
+    "at": 420
+   },
+   "lab": {
+    "size": 2,
+    "at": 808
+   },
+   "pharmacy": {
+    "size": 6,
+    "at": 824
+   },
+   "opdRegistration": {
+    "size": 40,
+    "at": 585
+   },
+   "opdTriage": {
+    "size": 38,
+    "at": 667
+   },
+   "opdDoctor": {
+    "size": 2,
+    "at": 790
+   }
+  },
+  "turnedAway": 0,
+  "unfinished": 0
+ },
+ "7": {
+  "seed": 7,
+  "lunch": {
+   "outcome": "missed",
+   "perDoctor": [
+    {
+     "staffId": "mo1",
+     "lunchStart": 780
+    },
+    {
+     "staffId": "mo2",
+     "lunchStart": 780
+    },
+    {
+     "staffId": "mo3",
+     "lunchStart": 780
+    },
+    {
+     "staffId": "mo4",
+     "lunchStart": null
+    },
+    {
+     "staffId": "mo5",
+     "lunchStart": 784
+    },
+    {
+     "staffId": "mo6",
+     "lunchStart": 780
+    }
+   ]
+  },
+  "balik": {
+   "outcome": "overtime",
+   "lastPatientDone": 1024,
+   "overtimeMinutes": 4
+  },
+  "patientSatisfaction": 22.2,
+  "hcwSatisfaction": 89.5,
+  "waitByVisitType": {
+   "opd_general": {
+    "mean": 104.5,
+    "max": 169,
+    "count": 120
+   },
+   "immunisation": {
+    "mean": 36,
+    "max": 61,
+    "count": 4
+   },
+   "postnatal": {
+    "mean": 75.5,
+    "max": 112,
+    "count": 4
+   },
+   "anc_nurse_doctor": {
+    "mean": 97,
+    "max": 161,
+    "count": 9
+   },
+   "anc_nurse_only": {
+    "mean": 71.3,
+    "max": 109,
+    "count": 10
+   },
+   "anc_booking": {
+    "mean": 47.7,
+    "max": 80,
+    "count": 3
+   },
+   "anc_doctor_only": {
+    "mean": 94.8,
+    "max": 140,
+    "count": 9
+   },
+   "child_health": {
+    "mean": 15,
+    "max": 15,
+    "count": 1
+   }
+  },
+  "idleByStaff": {
+   "mo1": {
+    "morning": 88,
+    "total": 253
+   },
+   "mo2": {
+    "morning": 99,
+    "total": 390
+   },
+   "mo3": {
+    "morning": 21,
+    "total": 155
+   },
+   "mo4": {
+    "morning": 24,
+    "total": 205
+   },
+   "mo5": {
+    "morning": 39,
+    "total": 245
+   },
+   "mo6": {
+    "morning": 57,
+    "total": 292
+   },
+   "jk1": {
+    "morning": 25,
+    "total": 118
+   },
+   "jk2": {
+    "morning": 28,
+    "total": 162
+   },
+   "jm1": {
+    "morning": 32,
+    "total": 315
+   },
+   "jm2": {
+    "morning": 91,
+    "total": 432
+   },
+   "jm3": {
+    "morning": 8,
+    "total": 153
+   },
+   "ppk1": {
+    "morning": 12,
+    "total": 320
+   },
+   "pt1": {
+    "morning": 15,
+    "total": 327
+   },
+   "pt2": {
+    "morning": 1,
+    "total": 242
+   },
+   "pt3": {
+    "morning": 3,
+    "total": 290
+   },
+   "jtmp1": {
+    "morning": 115,
+    "total": 449
+   },
+   "ppf1": {
+    "morning": 39,
+    "total": 171
+   },
+   "ppf2": {
+    "morning": 64,
+    "total": 258
+   }
+  },
+  "peakQueue": {
+   "primaryTriage": {
+    "size": 41,
+    "at": 479
+   },
+   "mchRegistration": {
+    "size": 5,
+    "at": 581
+   },
+   "mchTriage": {
+    "size": 1,
+    "at": 522
+   },
+   "ancNurse": {
+    "size": 13,
+    "at": 626
+   },
+   "mchDoctor": {
+    "size": 4,
+    "at": 820
+   },
+   "immunisation": {
+    "size": 1,
+    "at": 497
+   },
+   "lab": {
+    "size": 0,
+    "at": 420
+   },
+   "pharmacy": {
+    "size": 5,
+    "at": 839
+   },
+   "opdRegistration": {
+    "size": 38,
+    "at": 574
+   },
+   "opdTriage": {
+    "size": 38,
+    "at": 673
+   },
+   "opdDoctor": {
+    "size": 9,
+    "at": 817
+   }
+  },
+  "turnedAway": 0,
+  "unfinished": 0
+ }
+}

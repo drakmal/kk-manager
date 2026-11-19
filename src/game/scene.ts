@@ -58,8 +58,10 @@ export function targets(layout: ClinicLayout, snap: SimSnapshot, sim: SimView): 
     station.seats.forEach((seat, i) => {
       const s = room.seats[i % room.seats.length]!;
       const c = room.chairs[i % room.chairs.length]!;
-      if (!seat.onLunch && !away.has(seat.staffId)) out.set(`s:${seat.staffId}`, { x: s.x, y: s.y, pose: 'sit' });
-      if (seat.patientId !== null) out.set(`p${seat.patientId}`, { x: c.x, y: c.y, pose: 'sit' });
+      // Extra (trainee) seats sit just beside the normal seat they share.
+      const dx = Math.floor(i / room.seats.length) * 0.6;
+      if (!seat.onLunch && !away.has(seat.staffId)) out.set(`s:${seat.staffId}`, { x: s.x + dx, y: s.y, pose: 'sit' });
+      if (seat.patientId !== null) out.set(`p${seat.patientId}`, { x: c.x + dx, y: c.y, pose: 'sit' });
     });
   }
   return out;

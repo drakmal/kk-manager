@@ -129,3 +129,15 @@ test('nameFor draws from Malay, Chinese and Indian name lists', () => {
     expect(names.some((n) => list.includes(n))).toBe(true);
   }
 });
+
+test('a trainee in an extra seat sits beside, not on top of, the normal seat', () => {
+  const r = room('mchDoctor');
+  const sim = { patients: [], staff: [staffState('mo1', 'mchDoctor'), staffState('mo2', 'mchDoctor'), staffState('mo7', 'mchDoctor')] };
+  const s = snap(500, [{
+    id: 'mchDoctor', queue: [],
+    seats: ['mo1', 'mo2', 'mo7'].map((staffId) => ({ staffId, patientId: null, onLunch: false })),
+  }]);
+  const t = targets(layout, s, sim);
+  expect(r.seats.length).toBe(2);
+  expect(t.get('s:mo7')).not.toEqual(t.get('s:mo1'));
+});

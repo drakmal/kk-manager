@@ -104,7 +104,9 @@ export type ClinicEvent =
   | { kind: 'ccmsDown'; from: Minute; to: Minute }
   | { kind: 'printerDown'; from: Minute; to: Minute }
   | { kind: 'influx'; at: Minute; count: number; visitType: VisitTypeId }
-  | { kind: 'emergencyWalkIn'; at: Minute; minutes: [number, number] };
+  | { kind: 'emergencyWalkIn'; at: Minute; minutes: [number, number] }
+  /** That person is unavailable for [from, to). Someone mid-consultation finishes that patient first. */
+  | { kind: 'staffAway'; staffId: StaffId; from: Minute; to: Minute };
 
 /** A step with its duration already drawn for this patient. */
 export interface PlannedStep {
@@ -155,4 +157,8 @@ export interface DayPlan {
   roster: Record<StationId, StaffId[]>;
   sop: SopSettings;
   events: ClinicEvent[];
+  /** Service-time multiplier per person (trainees, mentors, low morale). Default 1, floor 0.1. */
+  staffSpeed?: Record<StaffId, number>;
+  /** Staff seated beyond a station's `seats` (trainees), in order. They take this seat even if also rostered. */
+  extraSeats?: Record<StationId, StaffId[]>;
 }

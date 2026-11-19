@@ -1,4 +1,4 @@
-import { createSim, type EngineHooks, type EngineInternals, type Sim, type SimOptions, type StaffState } from './engine';
+import { createSim, DAY_START, type EngineHooks, type EngineInternals, type Sim, type SimOptions, type StaffState } from './engine';
 import { makePatient } from './patients';
 import type { ClinicEvent, DayPlan, GameData, Minute, StationDef, Tuning } from './types';
 
@@ -79,6 +79,11 @@ function eventHooks(x: EngineInternals): Partial<EngineHooks> {
           for (let i = 0; i < e.count; i++) x.addPatient(makePatient(data, e.visitType, t, nextId++, rng));
         }
         if (e.kind === 'emergencyWalkIn' && e.at === t) startEmergency(t, e.minutes);
+        if (e.kind === 'staffAway' && Math.max(e.from, DAY_START) === t && t < e.to) {
+          // Service already under way carries on; the person just can't take anyone new until `to`.
+          const s = staff.find((p) => p.id === e.staffId);
+          if (s) s.unavailableUntil = Math.max(s.unavailableUntil ?? t, e.to);
+        }
       }
       pinjamDoktor(t);
     },

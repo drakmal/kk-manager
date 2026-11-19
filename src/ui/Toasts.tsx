@@ -17,12 +17,13 @@ interface Toast {
   manual?: boolean;
 }
 
-function eventStart(e: ClinicEvent): { at: number; situation: JokeSituation } {
+function eventStart(e: ClinicEvent): { at: number; situation: JokeSituation } | null {
   switch (e.kind) {
     case 'ccmsDown': return { at: e.from, situation: 'ccmsDown' };
     case 'printerDown': return { at: e.from, situation: 'printerDown' };
     case 'influx': return { at: e.at, situation: 'influx' };
     case 'emergencyWalkIn': return { at: e.at, situation: 'emergency' };
+    case 'staffAway': return null;
   }
 }
 
@@ -34,7 +35,9 @@ export function Toasts({ controller: c, data }: Props) {
 
   const toasts: Toast[] = [];
   for (const e of c.dayPlan.events) {
-    const { at, situation } = eventStart(e);
+    const start = eventStart(e);
+    if (!start) continue;
+    const { at, situation } = start;
     if (now > at && now <= at + SHOW_FOR) toasts.push({ id: `${situation}@${at}`, situation, manual: situation === 'ccmsDown' });
   }
   const cutoff = data.tuning.lunchLateCutoff;

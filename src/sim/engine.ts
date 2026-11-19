@@ -103,8 +103,16 @@ export function createSim(
   const stationById = new Map(data.stations.map((s) => [s.id, s]));
   const queues = new Map<StationId, QueueEntry[]>(data.stations.map((s) => [s.id, []]));
 
-  // Seat staff in roster order, capped at the station's seat count.
+  // Trainees take their extra seats first; then the roster fills the normal seats in order, capped at `seats`.
   const seated = new Map<StaffId, StationId>();
+  const extraSeated = new Set<StaffId>();
+  for (const station of data.stations) {
+    for (const id of plan.extraSeats?.[station.id] ?? []) {
+      if (seated.has(id)) continue;
+      seated.set(id, station.id);
+      extraSeated.add(id);
+    }
+  }
   for (const station of data.stations) {
     const ids = (plan.roster[station.id] ?? []).filter((id) => !seated.has(id)).slice(0, station.seats);
     for (const id of ids) seated.set(id, station.id);
@@ -142,7 +150,9 @@ export function createSim(
           for (const id of ids.filter((i) => !target.has(i)).slice(0, station.seats)) target.set(id, station.id);
         }
         for (const s of staff) {
-          const next = target.get(s.id) ?? (s.station !== null && listed.has(s.station) ? null : s.station);
+          // Trainees keep their extra seat unless the change names them for another station.
+          const keep = extraSeated.has(s.id) || !(s.station !== null && listed.has(s.station));
+          const next = target.get(s.id) ?? (keep ? s.station : null);
           if (next !== s.station) pendingMoves.set(s.id, next);
           else pendingMoves.delete(s.id);
         }
@@ -288,7 +298,10 @@ export function createSim(
         const p = takeNext(station.id);
         if (!p) break;
         s.servingPatient = p.id;
-        s.remaining = hooks.serviceMinutes(currentStep(p)!.minutes, station, t);
+        // Personal speed first, then the event modifiers (CCMS, printer).
+        const speed = Math.max(0.1, plan.staffSpeed?.[s.id] ?? 1);
+        const base = speed === 1 ? currentStep(p)!.minutes : Math.ceil(currentStep(p)!.minutes * speed);
+        s.remaining = hooks.serviceMinutes(base, station, t);
       }
     }
 
@@ -336,6 +349,7 @@ export function createSim(
         queue,
         seats: staff
           .filter((s) => s.station === station.id)
+          .sort((a, b) => Number(extraSeated.has(a.id)) - Number(extraSeated.has(b.id)))
           .map((s) => ({ staffId: s.id, patientId: s.servingPatient, onLunch: s.onLunch })),
       };
     });
