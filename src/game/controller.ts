@@ -1,69 +1,90 @@
+import { popupKey, sopWithFlags, type DayContext, type Popup, type PopupDef, type WeekFlags } from '../popups/popups';
 import {
   buildReport,
   createDaySim,
   defaultDayPlan,
+  type ClinicEvent,
   type DayPlan,
   type DayReport,
   type GameData,
-  type Minute,
-  type PlanChange,
   type Sim,
   type SopSettings,
   type StaffId,
   type StationId,
 } from '../sim/index';
 import { createClock, type GameClock, type Speed } from './clock';
-import { SCENARIOS } from './scenarios';
 
 export type Phase = 'plan' | 'running' | 'paused' | 'report';
 
 export interface DayController {
   readonly phase: Phase;
-  /** The player's plan (roster and SOP cards). */
+  /** The plan the day starts from (roster, SOP, events). */
   readonly plan: DayPlan;
-  /** Today's plan after the day type was applied (events, leave). Null before the day starts. */
+  /** The plan the clinic actually started with (flags applied). Null before the day starts. */
   readonly dayPlan: DayPlan | null;
-  readonly scenarioId: string;
   readonly sim: Sim | null;
   readonly report: DayReport | null;
   readonly clock: GameClock;
-  /** The SOP the clinic is working to now, including changes still being briefed. Null outside the day. */
+  /** The SOP the clinic is working to now. Null outside the day. */
   readonly liveSop: SopSettings | null;
+  /** The open popup. The clock doesn't advance while one is open. */
+  readonly popup: Popup | null;
+  /** The week's standing choices, updated by popup answers. */
+  readonly flags: WeekFlags;
   /** Who sits where right now. Empty outside the day. */
   liveRoster(): Record<StationId, StaffId[]>;
   setPlan(plan: DayPlan): void;
-  setScenario(id: string): void;
   start(): void;
   pause(): void;
   resume(): void;
   setSpeed(s: Speed): void;
   frame(dtMs: number): void;
-  applyChange(change: PlanChange): { effectiveAt: Minute };
-  finishNow(): void;
-  replay(): void;
-  newDay(): void;
+  answer(choiceId: string): void;
+  /** Runs to the next popup or the end of the day. Never answers a popup. */
+  skipAhead(): void;
   subscribe(listener: () => void): () => void;
 }
 
-/** Starting plan and day type; the campaign passes tomorrow's plan here. */
 export interface ControllerInit {
   plan?: DayPlan;
-  scenarioId?: string;
+  /** 1 = Isnin … 5 = Jumaat. */
+  day?: number;
+  flags?: WeekFlags;
+  popups?: PopupDef[];
 }
 
 export function createController(data: GameData, seed: number, init: ControllerInit = {}): DayController {
+  const day = init.day ?? 1;
+  const defs = init.popups ?? [];
   let phase: Phase = 'plan';
   let plan: DayPlan = init.plan ? structuredClone(init.plan) : defaultDayPlan(data, seed);
+  let flags: WeekFlags = { ...(init.flags ?? { saringan: false, laluanKhas: false }) };
   let dayPlan: DayPlan | null = null;
-  let scenarioId = init.scenarioId ?? 'biasa';
   let sim: Sim | null = null;
   let report: DayReport | null = null;
   let liveSop: SopSettings | null = null;
-  /** The last roster the player asked for mid-day; staff move to it between patients. */
-  let requestedRoster: Record<StationId, StaffId[]> | null = null;
+  let events: ClinicEvent[] = [];
+  let queue: { def: PopupDef; popup: Popup }[] = [];
+  const shown = new Set<string>();
+  let dismissedIdle = false;
   const clock = createClock();
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
+
+  const context = (s: Sim): DayContext => ({ day, now: s.now, sim: s, data, flags, shown, dismissedIdle, events });
+
+  /** Queues the popups due this minute. True when one is open. */
+  const openDue = (): boolean => {
+    if (queue.length > 0) return true;
+    const ctx = context(sim!);
+    for (const def of defs) {
+      const key = popupKey(def.id, ctx.now);
+      if (shown.has(key) || !def.due(ctx)) continue;
+      shown.add(key);
+      queue.push({ def, popup: def.build(ctx) });
+    }
+    return queue.length > 0;
+  };
 
   const finish = () => {
     report = buildReport(sim!, data, dayPlan!);
@@ -75,53 +96,37 @@ export function createController(data: GameData, seed: number, init: ControllerI
   const quiet = (s: Sim) =>
     s.now >= 480 && !s.staff.some((p) => p.servingPatient !== null) && s.snapshot().waitingCount === 0;
 
-  const backToPlan = (nextSeed: number) => {
-    plan = { ...plan, seed: nextSeed };
-    sim = null;
-    dayPlan = null;
-    liveSop = null;
-    requestedRoster = null;
-    report = null;
-    phase = 'plan';
-    clock.speed = 0;
-    notify();
-  };
+  const running = () => (phase === 'running' || phase === 'paused') && sim !== null;
 
   return {
     get phase() { return phase; },
     get plan() { return plan; },
     get dayPlan() { return dayPlan; },
-    get scenarioId() { return scenarioId; },
     get sim() { return sim; },
     get report() { return report; },
     get liveSop() { return liveSop; },
+    get popup() { return queue[0]?.popup ?? null; },
+    get flags() { return flags; },
     clock,
     liveRoster() {
       const out: Record<StationId, StaffId[]> = {};
       if (!sim) return out;
       for (const s of data.stations) out[s.id] = [];
       for (const s of sim.staff) if (s.station !== null) out[s.station]!.push(s.id);
-      // A change still being briefed (or waiting for someone to finish a patient) is what the clinic is moving to.
-      if (requestedRoster) for (const [station, ids] of Object.entries(requestedRoster)) out[station] = [...ids];
       return out;
     },
 
     setPlan(next) {
-      if (phase !== 'plan') throw new Error('The plan can only be changed before the day starts. Pause and apply a change instead.');
+      if (phase !== 'plan') throw new Error('The plan can only be changed before the day starts.');
       plan = structuredClone(next);
-      notify();
-    },
-    setScenario(id) {
-      if (!SCENARIOS.some((s) => s.id === id)) throw new Error(`Unknown day type "${id}"`);
-      scenarioId = id;
       notify();
     },
     start() {
       if (phase !== 'plan') throw new Error(`Cannot start the day from "${phase}"`);
-      const scenario = SCENARIOS.find((s) => s.id === scenarioId)!;
-      dayPlan = scenario.apply(structuredClone(plan), data);
+      dayPlan = { ...structuredClone(plan), sop: sopWithFlags(plan.sop, flags) };
       sim = createDaySim(data, dayPlan);
       liveSop = structuredClone(dayPlan.sop);
+      events = structuredClone(dayPlan.events);
       clock.speed = 1;
       phase = 'running';
       notify();
@@ -141,32 +146,53 @@ export function createController(data: GameData, seed: number, init: ControllerI
       notify();
     },
     frame(dtMs) {
-      if (phase !== 'running' || !sim) return;
+      if (phase !== 'running' || !sim || queue.length > 0) return;
       const steps = clock.advance(dtMs, quiet(sim));
-      for (let i = 0; i < steps && !sim.isDone(); i++) sim.step();
-      if (sim.isDone()) finish();
-      else if (steps > 0) notify();
-    },
-    applyChange(change) {
-      if ((phase !== 'running' && phase !== 'paused') || !sim) {
-        throw new Error('Changes can only be applied during the clinic day.');
+      let opened = false;
+      for (let i = 0; i < steps && !sim.isDone(); i++) {
+        if (openDue()) {
+          opened = true;
+          break;
+        }
+        sim.step();
       }
-      const result = sim.applyChange(change);
-      if (change.sop) liveSop = structuredClone(change.sop);
-      if (change.roster) requestedRoster = { ...(requestedRoster ?? {}), ...structuredClone(change.roster) };
+      if (sim.isDone()) finish();
+      else if (steps > 0 || opened) notify();
+    },
+    answer(choiceId) {
+      const current = queue[0];
+      if (!current || !sim || !liveSop) return;
+      const ctx = context(sim);
+      const effect = current.def.effect(choiceId, ctx);
+      queue = queue.slice(1);
+      let sop = liveSop;
+      if (effect.flags) {
+        flags = { ...flags, ...effect.flags };
+        sop = sopWithFlags(sop, flags);
+      }
+      if (effect.sopPatch) sop = { ...sop, ...structuredClone(effect.sopPatch) };
+      if (sop !== liveSop) {
+        sim.applyChange({ sop }, { immediate: true, free: true });
+        liveSop = sop;
+      }
+      if (effect.change) {
+        sim.applyChange(effect.change, { immediate: true, free: true });
+        if (effect.change.events) events = structuredClone(effect.change.events);
+      }
+      if (effect.dismissIdle) dismissedIdle = true;
       notify();
-      return result;
     },
-    finishNow() {
-      if ((phase !== 'running' && phase !== 'paused') || !sim) return;
-      while (!sim.isDone()) sim.step();
+    skipAhead() {
+      if (!running() || queue.length > 0) return;
+      const s = sim!;
+      while (!s.isDone()) {
+        if (openDue()) {
+          notify();
+          return;
+        }
+        s.step();
+      }
       finish();
-    },
-    replay() {
-      backToPlan(plan.seed);
-    },
-    newDay() {
-      backToPlan(plan.seed + 1);
     },
     subscribe(listener) {
       listeners.add(listener);
