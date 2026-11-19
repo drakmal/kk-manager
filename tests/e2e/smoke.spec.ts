@@ -4,6 +4,7 @@ test('play a day end to end', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('./');
+  await page.getByRole('button', { name: 'Free play' }).click();
   await expect(page.getByRole('heading', { name: 'Pagi ini · Hari 1' })).toBeVisible();
   await page.getByLabel(/CCMS down pagi/).check();
   await page.getByRole('button', { name: 'Start the day' }).click();
