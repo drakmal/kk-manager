@@ -121,3 +121,18 @@ test('browserStorage uses a working localStorage', () => {
 test('exportFileName', () => {
   expect(exportFileName(makeSave(4, 1))).toBe('kk-manager-slot1-day4.json');
 });
+
+test('a hand-edited save with damaged insides is rejected with a message, not loaded', () => {
+  const good = JSON.parse(serialise(makeSave(5)));
+  const bad = (state: Record<string, unknown>) => {
+    const r = parseSave(JSON.stringify({ ...good, state: { ...good.state, ...state } }), data);
+    expect(r.ok).toBe(false);
+    return r.ok ? '' : r.error;
+  };
+  expect(bad({ messages: [{}] })).toMatch(/messages/);
+  expect(bad({ history: ['x'] })).toMatch(/history/);
+  expect(bad({ trainees: [{ staffId: 7 }] })).toMatch(/trainees/);
+  expect(bad({ extraStaff: [null] })).toMatch(/extraStaff/);
+  expect(bad({ roster: { ...good.state.roster, roof: ['mo1'] } })).toMatch(/damaged/);
+  expect(bad({ sop: { ...good.state.sop, laluanKhas: { enabled: true } } })).toMatch(/damaged/);
+});

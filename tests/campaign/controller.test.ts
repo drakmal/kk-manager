@@ -152,3 +152,22 @@ test('setMentor turns on Pasangan Mentor and re-pairs the trainee for tomorrow',
   expect(c.day!.plan.staffSpeed?.mo2).toBeCloseTo(1.2);
   expect(c.day!.plan.staffSpeed?.mo1 ?? 1).toBe(1);
 });
+
+test('the campaign stays quiet while the day runs, and its day data keeps its identity', () => {
+  const c = newCampaign(data, memoryStorage(), 1, 4, now);
+  answerAll(c);
+  c.toPlan();
+  expect(c.data).toBe(c.data);
+  c.day!.start();
+  const dayData = c.data;
+  let calls = 0;
+  c.subscribe(() => calls++);
+  c.day!.setSpeed(4);
+  for (let i = 0; i < 20; i++) c.day!.frame(1000);
+  expect(c.phase).toBe('day');
+  expect(calls).toBe(0);
+  expect(c.data).toBe(dayData);
+  c.day!.finishNow();
+  expect(calls).toBe(1);
+  expect(c.phase).toBe('report');
+});

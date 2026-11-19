@@ -52,12 +52,25 @@ function start(baseData: GameData, storage: SaveStorage, slot: Slot, initial: Ca
 
   const onDay = () => {
     if (!day) return;
+    const before = phase;
     if (phase === 'plan' && day.phase === 'running') {
       state = rememberPlan(state, day.plan);
       phase = 'day';
     }
     if (phase === 'day' && day.phase === 'report') phase = 'report';
-    notify();
+    // The day screens follow the day controller themselves; stay quiet while the clock ticks.
+    if (phase !== before || phase === 'plan') notify();
+  };
+
+  /** Today's game data, rebuilt only when the state changes (keeps the canvas layout cached). */
+  let dataFor: CampaignState | null = null;
+  let todayData: GameData = baseData;
+  const currentData = () => {
+    if (dataFor !== state) {
+      todayData = staffFor(baseData, state);
+      dataFor = state;
+    }
+    return todayData;
   };
 
   enterNight();
@@ -66,7 +79,7 @@ function start(baseData: GameData, storage: SaveStorage, slot: Slot, initial: Ca
     get phase() { return phase; },
     get state() { return state; },
     get day() { return day; },
-    get data() { return staffFor(baseData, state); },
+    get data() { return currentData(); },
     get saveAvailable() { return saveAvailable; },
     get review() { return review; },
     slot,
