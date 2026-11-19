@@ -1,0 +1,145 @@
+import {
+  buildReport,
+  createDaySim,
+  defaultDayPlan,
+  type DayPlan,
+  type DayReport,
+  type GameData,
+  type Minute,
+  type PlanChange,
+  type Sim,
+} from '../sim/index';
+import { createClock, type GameClock, type Speed } from './clock';
+import { SCENARIOS } from './scenarios';
+
+export type Phase = 'plan' | 'running' | 'paused' | 'report';
+
+export interface DayController {
+  readonly phase: Phase;
+  /** The player's plan (roster and SOP cards). */
+  readonly plan: DayPlan;
+  /** Today's plan after the day type was applied (events, leave). Null before the day starts. */
+  readonly dayPlan: DayPlan | null;
+  readonly scenarioId: string;
+  readonly sim: Sim | null;
+  readonly report: DayReport | null;
+  readonly clock: GameClock;
+  setPlan(plan: DayPlan): void;
+  setScenario(id: string): void;
+  start(): void;
+  pause(): void;
+  resume(): void;
+  setSpeed(s: Speed): void;
+  frame(dtMs: number): void;
+  applyChange(change: PlanChange): { effectiveAt: Minute };
+  finishNow(): void;
+  replay(): void;
+  newDay(): void;
+  subscribe(listener: () => void): () => void;
+}
+
+export function createController(data: GameData, seed: number): DayController {
+  let phase: Phase = 'plan';
+  let plan: DayPlan = defaultDayPlan(data, seed);
+  let dayPlan: DayPlan | null = null;
+  let scenarioId = 'biasa';
+  let sim: Sim | null = null;
+  let report: DayReport | null = null;
+  const clock = createClock();
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((l) => l());
+
+  const finish = () => {
+    report = buildReport(sim!, data, dayPlan!);
+    phase = 'report';
+    clock.speed = 0;
+    notify();
+  };
+
+  const quiet = (s: Sim) =>
+    s.now >= 480 && !s.staff.some((p) => p.servingPatient !== null) && s.snapshot().waitingCount === 0;
+
+  const backToPlan = (nextSeed: number) => {
+    plan = { ...plan, seed: nextSeed };
+    sim = null;
+    dayPlan = null;
+    report = null;
+    phase = 'plan';
+    clock.speed = 0;
+    notify();
+  };
+
+  return {
+    get phase() { return phase; },
+    get plan() { return plan; },
+    get dayPlan() { return dayPlan; },
+    get scenarioId() { return scenarioId; },
+    get sim() { return sim; },
+    get report() { return report; },
+    clock,
+
+    setPlan(next) {
+      if (phase !== 'plan') throw new Error('The plan can only be changed before the day starts. Pause and apply a change instead.');
+      plan = structuredClone(next);
+      notify();
+    },
+    setScenario(id) {
+      if (!SCENARIOS.some((s) => s.id === id)) throw new Error(`Unknown day type "${id}"`);
+      scenarioId = id;
+      notify();
+    },
+    start() {
+      if (phase !== 'plan') throw new Error(`Cannot start the day from "${phase}"`);
+      const scenario = SCENARIOS.find((s) => s.id === scenarioId)!;
+      dayPlan = scenario.apply(structuredClone(plan), data);
+      sim = createDaySim(data, dayPlan);
+      clock.speed = 1;
+      phase = 'running';
+      notify();
+    },
+    pause() {
+      if (phase !== 'running') return;
+      phase = 'paused';
+      notify();
+    },
+    resume() {
+      if (phase !== 'paused') return;
+      phase = 'running';
+      notify();
+    },
+    setSpeed(s) {
+      clock.speed = s;
+      notify();
+    },
+    frame(dtMs) {
+      if (phase !== 'running' || !sim) return;
+      const steps = clock.advance(dtMs, quiet(sim));
+      for (let i = 0; i < steps && !sim.isDone(); i++) sim.step();
+      if (sim.isDone()) finish();
+      else if (steps > 0) notify();
+    },
+    applyChange(change) {
+      if ((phase !== 'running' && phase !== 'paused') || !sim) {
+        throw new Error('Changes can only be applied during the clinic day.');
+      }
+      const result = sim.applyChange(change);
+      notify();
+      return result;
+    },
+    finishNow() {
+      if ((phase !== 'running' && phase !== 'paused') || !sim) return;
+      while (!sim.isDone()) sim.step();
+      finish();
+    },
+    replay() {
+      backToPlan(plan.seed);
+    },
+    newDay() {
+      backToPlan(plan.seed + 1);
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
