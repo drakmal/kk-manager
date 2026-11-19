@@ -45,11 +45,17 @@ export interface DayController {
   subscribe(listener: () => void): () => void;
 }
 
-export function createController(data: GameData, seed: number): DayController {
+/** Starting plan and day type; the campaign passes tomorrow's plan here. */
+export interface ControllerInit {
+  plan?: DayPlan;
+  scenarioId?: string;
+}
+
+export function createController(data: GameData, seed: number, init: ControllerInit = {}): DayController {
   let phase: Phase = 'plan';
-  let plan: DayPlan = defaultDayPlan(data, seed);
+  let plan: DayPlan = init.plan ? structuredClone(init.plan) : defaultDayPlan(data, seed);
   let dayPlan: DayPlan | null = null;
-  let scenarioId = 'biasa';
+  let scenarioId = init.scenarioId ?? 'biasa';
   let sim: Sim | null = null;
   let report: DayReport | null = null;
   let liveSop: SopSettings | null = null;
