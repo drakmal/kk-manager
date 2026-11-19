@@ -2,7 +2,7 @@ import { loadGameData, validateGameData } from '../../src/sim/data';
 import { defaultDayPlan } from '../../src/sim/plan';
 
 test('default data loads', () => {
-  expect(loadGameData().stations.length).toBe(11);
+  expect(loadGameData().stations.length).toBe(16);
 });
 
 test('hourly shares sum to 1', () => {
@@ -30,6 +30,7 @@ test.each([
 test('default plan rosters everyone at home', () => {
   const p = defaultDayPlan(loadGameData(), 1);
   expect(p.roster.mchDoctor).toHaveLength(2);
-  expect(p.roster.opdDoctor).toHaveLength(4);
+  expect(p.roster.opdRoom1).toHaveLength(2);
+  expect(p.roster.opdRoom2).toHaveLength(2);
   expect(Object.values(p.sop.saringan.bypass).every((v) => v === false)).toBe(true);
 });

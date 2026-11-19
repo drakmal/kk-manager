@@ -1,79 +1,12 @@
 [
-  {
-    "id": "anc_booking", "unit": "mch", "label": "Antenatal (pendaftaran baru)", "share": 0.08, "appointment": true,
-    "priority": ["pregnant"], "colourWeights": { "putih": 0.35, "hijau": 0.4, "kuning": 0.2, "merah": 0.05 },
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "ancNurse", "minutes": [35, 45] },
-      { "station": "mchDoctor", "minutes": [20, 30] },
-      { "station": "lab" },
-      { "station": "pharmacy", "chance": 0.8 }
-    ]
-  },
-  {
-    "id": "anc_nurse_only", "unit": "mch", "label": "Antenatal (jururawat sahaja)", "share": 0.3, "appointment": true,
-    "priority": ["pregnant"], "colourWeights": { "putih": 0.35, "hijau": 0.4, "kuning": 0.2, "merah": 0.05 },
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "ancNurse", "minutes": [20, 30] },
-      { "station": "lab", "chance": 0.3 },
-      { "station": "pharmacy", "chance": 0.5 }
-    ]
-  },
-  {
-    "id": "anc_nurse_doctor", "unit": "mch", "label": "Antenatal (jururawat dan doktor)", "share": 0.22, "appointment": true,
-    "priority": ["pregnant"], "colourWeights": { "putih": 0.35, "hijau": 0.4, "kuning": 0.2, "merah": 0.05 },
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "ancNurse", "minutes": [20, 30] },
-      { "station": "mchDoctor", "minutes": [8, 15] },
-      { "station": "lab", "chance": 0.2 },
-      { "station": "pharmacy", "chance": 0.6 }
-    ]
-  },
-  {
-    "id": "anc_doctor_only", "unit": "mch", "label": "Antenatal (doktor sahaja)", "share": 0.2, "appointment": true,
-    "priority": ["pregnant"], "colourWeights": { "putih": 0.35, "hijau": 0.4, "kuning": 0.2, "merah": 0.05 },
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "ancNurse", "minutes": [4, 6], "bypassable": true },
-      { "station": "mchDoctor", "minutes": [5, 10] },
-      { "station": "pharmacy", "chance": 0.5 }
-    ]
-  },
-  {
-    "id": "postnatal", "unit": "mch", "label": "Postnatal", "share": 0.08, "appointment": true,
-    "priority": ["pregnant"],
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "ancNurse", "minutes": [15, 20] },
-      { "station": "mchDoctor", "minutes": [8, 12] },
-      { "station": "pharmacy", "chance": 0.5 }
-    ]
-  },
-  {
-    "id": "child_health", "unit": "mch", "label": "Kesihatan kanak-kanak", "share": 0.07, "appointment": true,
-    "priority": ["childUnder2"],
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "immunisation", "minutes": [10, 15] }
-    ]
-  },
-  {
-    "id": "immunisation", "unit": "mch", "label": "Imunisasi", "share": 0.05, "appointment": true,
-    "priority": ["childUnder2"],
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "mchRegistration" }, { "station": "mchTriage" },
-      { "station": "immunisation", "minutes": [8, 12] }
-    ]
-  },
-  {
-    "id": "opd_general", "unit": "opd", "label": "Pesakit luar", "share": 1, "appointment": false,
-    "priority": [],
-    "steps": [
-      { "station": "primaryTriage" }, { "station": "opdRegistration" }, { "station": "opdTriage" },
-      { "station": "opdDoctor" },
-      { "station": "pharmacy", "chance": 0.9 }
-    ]
-  }
+  {"id":"anc_booking","unit":"mch","label":"Antenatal (pendaftaran baru)","share":0.08,"appointment":true,"priority":["pregnant"],"colourWeights":{"putih":0.35,"hijau":0.4,"kuning":0.2,"merah":0.05},"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"ancNurse","minutes":[35,45]},{"station":"mchDoctor","minutes":[20,30],"addOn":{"chance":1,"minutes":[5,10]}},{"station":"lab"},{"station":"pharmacy","chance":0.8}]},
+  {"id":"anc_nurse_only","unit":"mch","label":"Antenatal (jururawat sahaja)","share":0.3,"appointment":true,"priority":["pregnant"],"colourWeights":{"putih":0.35,"hijau":0.4,"kuning":0.2,"merah":0.05},"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"ancNurse","minutes":[20,30]},{"station":"lab","chance":0.3},{"station":"pharmacy","chance":0.5}]},
+  {"id":"anc_nurse_doctor","unit":"mch","label":"Antenatal (jururawat dan doktor)","share":0.22,"appointment":true,"priority":["pregnant"],"colourWeights":{"putih":0.35,"hijau":0.4,"kuning":0.2,"merah":0.05},"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"ancNurse","minutes":[20,30]},{"station":"mchDoctor","minutes":[8,15],"addOn":{"chance":0.3,"minutes":[5,10]}},{"station":"lab","chance":0.2},{"station":"pharmacy","chance":0.6}]},
+  {"id":"anc_doctor_only","unit":"mch","label":"Antenatal (doktor sahaja)","share":0.2,"appointment":true,"priority":["pregnant"],"colourWeights":{"putih":0.35,"hijau":0.4,"kuning":0.2,"merah":0.05},"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"ancNurse","minutes":[4,6],"bypassable":true},{"station":"mchDoctor","minutes":[5,10],"addOn":{"chance":0.3,"minutes":[5,10]}},{"station":"pharmacy","chance":0.5}]},
+  {"id":"postnatal","unit":"mch","label":"Postnatal","share":0.08,"appointment":true,"priority":["pregnant"],"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"ancNurse","minutes":[15,20]},{"station":"mchDoctor","minutes":[8,12]},{"station":"pharmacy","chance":0.5}]},
+  {"id":"child_health","unit":"mch","label":"Kesihatan kanak-kanak","share":0.07,"appointment":true,"priority":["childUnder2"],"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"immunisation","minutes":[10,15]}]},
+  {"id":"immunisation","unit":"mch","label":"Imunisasi","share":0.05,"appointment":true,"priority":["childUnder2"],"steps":[{"station":"primaryTriage"},{"station":"mchRegistration"},{"station":"mchTriage"},{"station":"immunisation","minutes":[8,12]}]},
+  {"id":"opd_general","unit":"opd","label":"Pesakit luar","share":0.92,"appointment":false,"priority":[],"steps":[{"station":"primaryTriage"},{"station":"opdRegistration"},{"station":"opdTriage"},{"station":"opdDoctor"},{"station":"xray","chance":0.08},{"station":"pharmacy","chance":0.9}]},
+  {"id":"physio","unit":"opd","label":"Fisioterapi / Cara Kerja (temujanji)","share":0.05,"appointment":true,"priority":[],"steps":[{"station":"primaryTriage"},{"station":"opdRegistration"},{"station":"physio"}]},
+  {"id":"nutrition","unit":"opd","label":"Pemakanan / Dietetik (temujanji)","share":0.03,"appointment":true,"priority":[],"steps":[{"station":"primaryTriage"},{"station":"opdRegistration"},{"station":"nutrition"}]}
 ]

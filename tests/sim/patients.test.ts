@@ -51,7 +51,7 @@ test('kuning/merah scale mchDoctor minutes', () => {
     if (p.colour !== 'merah') continue;
     const doc = p.steps.find((s) => s.station === 'mchDoctor')!;
     expect(doc.minutes).toBeGreaterThanOrEqual(Math.ceil(8 * 1.6));
-    expect(doc.minutes).toBeLessThanOrEqual(Math.ceil(15 * 1.6));
+    expect(doc.minutes).toBeLessThanOrEqual(Math.ceil(15 * 1.6) + 10); // + a possible ultrasound
     checked++;
   }
   expect(checked).toBe(20);

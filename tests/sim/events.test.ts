@@ -33,11 +33,11 @@ test('CCMS down doubles registration minutes', () => {
 });
 
 test('CCMS + printer stack', () => {
-  expect(serviceMinutes(3, reg, 500, [ccms(480, 600), printer(480, 600)], tuning)).toBe(7);
+  expect(serviceMinutes(3, reg, 500, [ccms(480, 600), printer(480, 600)], tuning)).toBe(6 + tuning.printerRegistrationExtra);
 });
 
 test('printer adds to pharmacy only inside its window, and never to doctors', () => {
-  expect(serviceMinutes(5, pharmacy, 500, [printer(480, 600)], tuning)).toBe(7);
+  expect(serviceMinutes(5, pharmacy, 500, [printer(480, 600)], tuning)).toBe(5 + tuning.printerPharmacyExtra);
   expect(serviceMinutes(5, pharmacy, 700, [printer(480, 600)], tuning)).toBe(5);
   expect(serviceMinutes(5, doctor, 500, [printer(480, 600), ccms(480, 600)], tuning)).toBe(5);
 });
@@ -73,7 +73,7 @@ test('influx adds patients at the given minute', () => {
 test('emergency walk-in removes one OPD doctor for its duration', () => {
   const sim = createDaySim(data, plan(7, (p) => p.events.push({ kind: 'emergencyWalkIn', at: 600, minutes: [40, 40] })));
   while (sim.now <= 600) sim.step();
-  const opd = sim.staff.filter((s) => s.station === 'opdDoctor');
+  const opd = sim.staff.filter((s) => s.station?.startsWith('opdRoom'));
   const away = opd.filter((s) => s.unavailableUntil !== null);
   expect(away).toHaveLength(1);
   const until = away[0]!.unavailableUntil!;
@@ -92,7 +92,7 @@ test('two overlapping emergencies take two different OPD doctors', () => {
     p.events.push({ kind: 'emergencyWalkIn', at: 610, minutes: [40, 40] });
   }));
   while (sim.now <= 610) sim.step();
-  expect(sim.staff.filter((s) => s.station === 'opdDoctor' && s.unavailableUntil !== null)).toHaveLength(2);
+  expect(sim.staff.filter((s) => s.station?.startsWith('opdRoom') && s.unavailableUntil !== null)).toHaveLength(2);
 });
 
 test('a doctor away on an emergency does not start lunch until back', () => {
@@ -122,7 +122,7 @@ test('Pinjam fills an empty MCH seat after the briefing delay', () => {
   expect(firstReached).not.toBeNull();
   expect(movedAt).not.toBeNull();
   expect(movedAt! - firstReached!).toBeGreaterThanOrEqual(tuning.briefingDelayMinutes);
-  expect(sim.staff.filter((s) => s.station === 'opdDoctor')).toHaveLength(3);
+  expect(sim.staff.filter((s) => s.station?.startsWith('opdRoom'))).toHaveLength(3);
   expect(sim.staff.filter((s) => s.station === 'mchDoctor')).toHaveLength(2);
 });
 
@@ -130,5 +130,5 @@ test('Pinjam never borrows when the MCH room is full', () => {
   const sim = finish(createDaySim(data, plan(2, (p) => {
     p.sop.pinjamDoktor = { enabled: true, queueThreshold: 1, maxDoctors: 2 };
   })));
-  expect(sim.staff.filter((s) => s.station === 'opdDoctor')).toHaveLength(4);
+  expect(sim.staff.filter((s) => s.station?.startsWith('opdRoom'))).toHaveLength(4);
 });

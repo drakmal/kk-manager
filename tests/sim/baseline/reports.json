@@ -6,173 +6,195 @@
    "perDoctor": [
     {
      "staffId": "mo1",
-     "lunchStart": 804
+     "lunchStart": 823
     },
     {
      "staffId": "mo2",
-     "lunchStart": 780
+     "lunchStart": 781
     },
     {
      "staffId": "mo3",
-     "lunchStart": 817
+     "lunchStart": 795
     },
     {
      "staffId": "mo4",
-     "lunchStart": 784
+     "lunchStart": 780
     },
     {
      "staffId": "mo5",
-     "lunchStart": 820
+     "lunchStart": 799
     },
     {
      "staffId": "mo6",
-     "lunchStart": 824
+     "lunchStart": 789
     }
    ]
   },
   "balik": {
-   "outcome": "overtime",
-   "lastPatientDone": 1025,
-   "overtimeMinutes": 5
+   "outcome": "onTime",
+   "lastPatientDone": 989,
+   "overtimeMinutes": 0
   },
-  "patientSatisfaction": 23,
-  "hcwSatisfaction": 90.1,
+  "patientSatisfaction": 20.7,
+  "hcwSatisfaction": 89.6,
   "waitByVisitType": {
    "opd_general": {
-    "mean": 104.5,
-    "max": 154,
-    "count": 120
-   },
-   "anc_nurse_doctor": {
-    "mean": 88.8,
-    "max": 132,
-    "count": 10
-   },
-   "anc_doctor_only": {
-    "mean": 86.5,
-    "max": 141,
-    "count": 11
-   },
-   "anc_nurse_only": {
-    "mean": 47,
-    "max": 113,
-    "count": 12
+    "mean": 97.4,
+    "max": 143,
+    "count": 113
    },
    "anc_booking": {
-    "mean": 88,
-    "max": 118,
-    "count": 3
+    "mean": 128.6,
+    "max": 170,
+    "count": 5
    },
-   "postnatal": {
-    "mean": 125,
-    "max": 125,
-    "count": 1
+   "anc_nurse_doctor": {
+    "mean": 131.8,
+    "max": 203,
+    "count": 6
+   },
+   "anc_doctor_only": {
+    "mean": 103.8,
+    "max": 174,
+    "count": 8
+   },
+   "anc_nurse_only": {
+    "mean": 121.1,
+    "max": 210,
+    "count": 14
+   },
+   "physio": {
+    "mean": 68.4,
+    "max": 116,
+    "count": 5
    },
    "immunisation": {
-    "mean": 71,
-    "max": 71,
-    "count": 1
+    "mean": 39.5,
+    "max": 79,
+    "count": 2
+   },
+   "postnatal": {
+    "mean": 96,
+    "max": 171,
+    "count": 3
    },
    "child_health": {
-    "mean": 25.5,
-    "max": 43,
+    "mean": 44.5,
+    "max": 56,
+    "count": 2
+   },
+   "nutrition": {
+    "mean": 31,
+    "max": 62,
     "count": 2
    }
   },
   "idleByStaff": {
    "mo1": {
-    "morning": 78,
-    "total": 319
+    "morning": 63,
+    "total": 289
    },
    "mo2": {
-    "morning": 92,
-    "total": 363
+    "morning": 66,
+    "total": 339
    },
    "mo3": {
-    "morning": 20,
-    "total": 140
+    "morning": 22,
+    "total": 175
    },
    "mo4": {
-    "morning": 27,
-    "total": 225
+    "morning": 43,
+    "total": 274
    },
    "mo5": {
-    "morning": 41,
-    "total": 250
+    "morning": 34,
+    "total": 195
    },
    "mo6": {
-    "morning": 73,
-    "total": 313
+    "morning": 59,
+    "total": 292
    },
    "jk1": {
-    "morning": 15,
-    "total": 94
+    "morning": 13,
+    "total": 134
    },
    "jk2": {
-    "morning": 20,
-    "total": 176
+    "morning": 17,
+    "total": 163
    },
    "jm1": {
-    "morning": 35,
-    "total": 322
+    "morning": 23,
+    "total": 316
    },
    "jm2": {
-    "morning": 99,
-    "total": 447
+    "morning": 104,
+    "total": 431
    },
    "jm3": {
-    "morning": 6,
-    "total": 160
+    "morning": 5,
+    "total": 145
    },
    "ppk1": {
-    "morning": 9,
+    "morning": 1,
     "total": 320
    },
    "pt1": {
-    "morning": 6,
-    "total": 317
+    "morning": 2,
+    "total": 322
    },
    "pt2": {
     "morning": 1,
-    "total": 256
+    "total": 244
    },
    "pt3": {
-    "morning": 2,
-    "total": 286
+    "morning": 3,
+    "total": 291
    },
    "jtmp1": {
-    "morning": 115,
-    "total": 411
+    "morning": 110,
+    "total": 418
    },
    "ppf1": {
-    "morning": 34,
-    "total": 186
+    "morning": 26,
+    "total": 168
    },
    "ppf2": {
-    "morning": 51,
-    "total": 248
+    "morning": 39,
+    "total": 243
+   },
+   "jxr1": {
+    "morning": 79,
+    "total": 370
+   },
+   "jp1": {
+    "morning": 47,
+    "total": 353
+   },
+   "pd1": {
+    "morning": 120,
+    "total": 447
    }
   },
   "peakQueue": {
    "primaryTriage": {
-    "size": 46,
-    "at": 481
+    "size": 59,
+    "at": 480
    },
    "mchRegistration": {
-    "size": 6,
-    "at": 522
+    "size": 7,
+    "at": 586
    },
    "mchTriage": {
-    "size": 2,
-    "at": 612
+    "size": 4,
+    "at": 619
    },
    "ancNurse": {
-    "size": 11,
-    "at": 614
+    "size": 12,
+    "at": 640
    },
    "mchDoctor": {
-    "size": 1,
-    "at": 529
+    "size": 3,
+    "at": 836
    },
    "immunisation": {
     "size": 0,
@@ -180,23 +202,43 @@
    },
    "lab": {
     "size": 2,
-    "at": 808
+    "at": 823
+   },
+   "xray": {
+    "size": 2,
+    "at": 551
    },
    "pharmacy": {
-    "size": 6,
-    "at": 824
+    "size": 3,
+    "at": 529
    },
    "opdRegistration": {
-    "size": 40,
-    "at": 585
+    "size": 41,
+    "at": 596
    },
    "opdTriage": {
-    "size": 38,
-    "at": 667
+    "size": 33,
+    "at": 666
    },
-   "opdDoctor": {
+   "opdRoom1": {
     "size": 2,
-    "at": 790
+    "at": 609
+   },
+   "opdRoom2": {
+    "size": 1,
+    "at": 525
+   },
+   "emergency": {
+    "size": 0,
+    "at": 420
+   },
+   "physio": {
+    "size": 1,
+    "at": 559
+   },
+   "nutrition": {
+    "size": 0,
+    "at": 420
    }
   },
   "turnedAway": 0,
@@ -205,201 +247,243 @@
  "7": {
   "seed": 7,
   "lunch": {
-   "outcome": "missed",
+   "outcome": "late",
    "perDoctor": [
     {
      "staffId": "mo1",
-     "lunchStart": 780
+     "lunchStart": 821
     },
     {
      "staffId": "mo2",
-     "lunchStart": 780
+     "lunchStart": 783
     },
     {
      "staffId": "mo3",
-     "lunchStart": 780
+     "lunchStart": 801
     },
     {
      "staffId": "mo4",
-     "lunchStart": null
+     "lunchStart": 798
     },
     {
      "staffId": "mo5",
-     "lunchStart": 784
+     "lunchStart": 800
     },
     {
      "staffId": "mo6",
-     "lunchStart": 780
+     "lunchStart": 795
     }
    ]
   },
   "balik": {
-   "outcome": "overtime",
-   "lastPatientDone": 1024,
-   "overtimeMinutes": 4
+   "outcome": "onTime",
+   "lastPatientDone": 989,
+   "overtimeMinutes": 0
   },
-  "patientSatisfaction": 22.2,
-  "hcwSatisfaction": 89.5,
+  "patientSatisfaction": 22.6,
+  "hcwSatisfaction": 89.2,
   "waitByVisitType": {
    "opd_general": {
-    "mean": 104.5,
-    "max": 169,
-    "count": 120
+    "mean": 99.7,
+    "max": 143,
+    "count": 112
    },
-   "immunisation": {
-    "mean": 36,
-    "max": 61,
-    "count": 4
-   },
-   "postnatal": {
-    "mean": 75.5,
-    "max": 112,
-    "count": 4
-   },
-   "anc_nurse_doctor": {
-    "mean": 97,
-    "max": 161,
-    "count": 9
-   },
-   "anc_nurse_only": {
-    "mean": 71.3,
-    "max": 109,
-    "count": 10
-   },
-   "anc_booking": {
-    "mean": 47.7,
-    "max": 80,
+   "nutrition": {
+    "mean": 84.3,
+    "max": 102,
     "count": 3
    },
+   "physio": {
+    "mean": 51,
+    "max": 105,
+    "count": 5
+   },
    "anc_doctor_only": {
-    "mean": 94.8,
-    "max": 140,
-    "count": 9
+    "mean": 49.1,
+    "max": 128,
+    "count": 8
+   },
+   "anc_nurse_doctor": {
+    "mean": 87.6,
+    "max": 154,
+    "count": 10
    },
    "child_health": {
-    "mean": 15,
-    "max": 15,
-    "count": 1
+    "mean": 27.3,
+    "max": 57,
+    "count": 4
+   },
+   "anc_nurse_only": {
+    "mean": 88,
+    "max": 119,
+    "count": 9
+   },
+   "immunisation": {
+    "mean": 61,
+    "max": 64,
+    "count": 2
+   },
+   "anc_booking": {
+    "mean": 117,
+    "max": 163,
+    "count": 2
+   },
+   "postnatal": {
+    "mean": 120.2,
+    "max": 159,
+    "count": 5
    }
   },
   "idleByStaff": {
    "mo1": {
-    "morning": 88,
-    "total": 253
+    "morning": 80,
+    "total": 271
    },
    "mo2": {
-    "morning": 99,
-    "total": 390
+    "morning": 97,
+    "total": 389
    },
    "mo3": {
-    "morning": 21,
-    "total": 155
+    "morning": 32,
+    "total": 214
    },
    "mo4": {
-    "morning": 24,
-    "total": 205
+    "morning": 53,
+    "total": 268
    },
    "mo5": {
-    "morning": 39,
-    "total": 245
+    "morning": 31,
+    "total": 222
    },
    "mo6": {
-    "morning": 57,
-    "total": 292
+    "morning": 58,
+    "total": 282
    },
    "jk1": {
-    "morning": 25,
-    "total": 118
+    "morning": 32,
+    "total": 168
    },
    "jk2": {
-    "morning": 28,
-    "total": 162
+    "morning": 52,
+    "total": 236
    },
    "jm1": {
-    "morning": 32,
-    "total": 315
+    "morning": 57,
+    "total": 324
    },
    "jm2": {
-    "morning": 91,
-    "total": 432
+    "morning": 84,
+    "total": 411
    },
    "jm3": {
-    "morning": 8,
-    "total": 153
+    "morning": 10,
+    "total": 172
    },
    "ppk1": {
-    "morning": 12,
+    "morning": 10,
     "total": 320
    },
    "pt1": {
-    "morning": 15,
-    "total": 327
+    "morning": 25,
+    "total": 328
    },
    "pt2": {
     "morning": 1,
-    "total": 242
+    "total": 246
    },
    "pt3": {
-    "morning": 3,
-    "total": 290
+    "morning": 2,
+    "total": 281
    },
    "jtmp1": {
     "morning": 115,
-    "total": 449
+    "total": 456
    },
    "ppf1": {
-    "morning": 39,
-    "total": 171
+    "morning": 49,
+    "total": 202
    },
    "ppf2": {
-    "morning": 64,
-    "total": 258
+    "morning": 62,
+    "total": 250
+   },
+   "jxr1": {
+    "morning": 104,
+    "total": 376
+   },
+   "jp1": {
+    "morning": 92,
+    "total": 352
+   },
+   "pd1": {
+    "morning": 95,
+    "total": 422
    }
   },
   "peakQueue": {
    "primaryTriage": {
-    "size": 41,
+    "size": 47,
     "at": 479
    },
    "mchRegistration": {
-    "size": 5,
-    "at": 581
+    "size": 6,
+    "at": 532
    },
    "mchTriage": {
-    "size": 1,
-    "at": 522
+    "size": 2,
+    "at": 613
    },
    "ancNurse": {
-    "size": 13,
-    "at": 626
+    "size": 11,
+    "at": 669
    },
    "mchDoctor": {
-    "size": 4,
-    "at": 820
+    "size": 2,
+    "at": 770
    },
    "immunisation": {
-    "size": 1,
-    "at": 497
-   },
-   "lab": {
     "size": 0,
     "at": 420
    },
+   "lab": {
+    "size": 1,
+    "at": 781
+   },
+   "xray": {
+    "size": 1,
+    "at": 548
+   },
    "pharmacy": {
-    "size": 5,
-    "at": 839
+    "size": 9,
+    "at": 836
    },
    "opdRegistration": {
-    "size": 38,
-    "at": 574
+    "size": 43,
+    "at": 584
    },
    "opdTriage": {
-    "size": 38,
-    "at": 673
+    "size": 31,
+    "at": 679
    },
-   "opdDoctor": {
-    "size": 9,
-    "at": 817
+   "opdRoom1": {
+    "size": 3,
+    "at": 628
+   },
+   "opdRoom2": {
+    "size": 1,
+    "at": 527
+   },
+   "emergency": {
+    "size": 0,
+    "at": 420
+   },
+   "physio": {
+    "size": 2,
+    "at": 677
+   },
+   "nutrition": {
+    "size": 0,
+    "at": 420
    }
   },
   "turnedAway": 0,

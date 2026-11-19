@@ -24,9 +24,9 @@ test('staffSpeed applies before CCMS and printer', () => {
     staffSpeed: { clerk1: 1.5 },
     events: [{ kind: 'ccmsDown', from: 480, to: 600 }, { kind: 'printerDown', from: 480, to: 600 }],
   };
-  // base 2 → ×1.5 = 3 → CCMS ×2 = 6 → printer +1 = 7; then doctor 3
+  // base 2 → ×1.5 = 3 → CCMS ×2 = 6 → printer +extra; then doctor 3
   const sim = run(fixtureData, plan, [scripted(1, 480, [['a', 2], ['b', 3]])]);
-  expect(sim.patients[0]!.doneAt).toBe(480 + 7 + 3);
+  expect(sim.patients[0]!.doneAt).toBe(480 + 6 + fixtureData.tuning.printerRegistrationExtra + 3);
 });
 
 test('extraSeats lets a trainee see patients beside the normal seats', () => {
