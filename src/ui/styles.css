@@ -96,3 +96,7 @@ table.waits td.num, table.waits th.num { text-align: right; font-variant-numeric
 .flow div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12px; }
 .flow div strong { display: block; font-size: 16px; }
 .unfinished { color: var(--bad); font-weight: 700; }
+
+/* Brand strip */
+.brand { position: fixed; left: 12px; bottom: 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; pointer-events: none; }
+.game-screen ~ .brand, .app:has(.game-screen) .brand { display: none; }

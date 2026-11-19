@@ -10,12 +10,14 @@
     "sim": "tsx scripts/sim-day.ts",
     "dev": "vite",
     "build": "vite build && node scripts/check-size.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "playwright test"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@preact/preset-vite": "^2.10.6",
     "@testing-library/preact": "^3.2.6",
     "@types/node": "^26.6.6",
