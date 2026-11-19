@@ -104,3 +104,4 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .grade-C { color: var(--mid); }
 .grade-D { color: var(--bad); }
 .remarks p { margin: 4px 0; }
+.popup .choices button { padding: 8px 14px; }

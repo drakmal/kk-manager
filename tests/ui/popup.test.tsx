@@ -26,3 +26,9 @@ test('focus starts on the first choice, and Escape does not close it', () => {
   expect(screen.getByRole('dialog')).toBeTruthy();
   expect(onAnswer).not.toHaveBeenCalled();
 });
+
+test('all choices look the same: none is highlighted', () => {
+  render(<PopupDialog popup={popup} onAnswer={() => {}} />);
+  const buttons = within(screen.getByRole('dialog')).getAllByRole('button');
+  expect(new Set(buttons.map((b) => b.className))).toEqual(new Set(['choice']));
+});

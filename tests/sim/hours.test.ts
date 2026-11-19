@@ -34,9 +34,19 @@ test('the counter break counts as an on-time lunch', () => {
   expect(staffScore(clerk, data.tuning)).toBe(100);
 });
 
-test('in the Jenis 4 data both registration counters and primary triage open at 07:30; counters break 13:00–13:30', () => {
+test('in the Jenis 4 data both registration counters and primary triage open at 07:30; counters close 12:30–13:30', () => {
   const real = loadGameData();
   for (const id of ['mchRegistration', 'opdRegistration', 'primaryTriage']) expect(real.stations.find((s) => s.id === id)!.opensAt).toBe(450);
-  for (const id of ['mchRegistration', 'opdRegistration']) expect(real.stations.find((s) => s.id === id)!.lunchBreak).toEqual([780, 810]);
+  for (const id of ['mchRegistration', 'opdRegistration']) expect(real.stations.find((s) => s.id === id)!.lunchBreak).toEqual([750, 810]);
   expect(real.stations.find((s) => s.id === 'mchDoctor')!.opensAt).toBe(480);
+});
+
+test('in the real clinic, registration closes 12:30–13:30 and stops taking patients after 16:30', () => {
+  const real = loadGameData();
+  const plan = { ...fixturePlan, roster: Object.fromEntries(real.stations.map((s) => [s.id, real.staff.filter((p) => p.homeStation === s.id).map((p) => p.id)])) };
+  const reg = (id: number, at: number) => ({ ...scripted(id, at, [['opdRegistration', 2]]), unit: 'opd' as const, visitType: 'opd_general' });
+  const sim = createDaySim(real, plan, { patients: [reg(1, 755), reg(2, 991)] });
+  while (!sim.isDone()) sim.step();
+  expect(sim.patients[0]!.doneAt).toBe(812);
+  expect(sim.patients[1]!.turnedAway).toBe(true);
 });

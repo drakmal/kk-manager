@@ -19,7 +19,7 @@ export function PopupDialog({ popup, onAnswer }: Props) {
         <p class="text">{popup.text}</p>
         <div class="choices">
           {popup.choices.map((c, i) => (
-            <button key={c.id} type="button" ref={i === 0 ? first : undefined} class={i === 0 ? 'primary' : undefined} onClick={() => onAnswer(c.id)}>
+            <button key={c.id} type="button" ref={i === 0 ? first : undefined} class="choice" onClick={() => onAnswer(c.id)}>
               {c.label}
             </button>
           ))}

@@ -14,19 +14,19 @@
     },
     {
      "staffId": "mo3",
-     "lunchStart": 790
+     "lunchStart": 780
     },
     {
      "staffId": "mo4",
-     "lunchStart": 781
+     "lunchStart": 780
     },
     {
      "staffId": "mo5",
-     "lunchStart": 794
+     "lunchStart": 783
     },
     {
      "staffId": "mo6",
-     "lunchStart": 784
+     "lunchStart": 783
     }
    ]
   },
@@ -35,16 +35,16 @@
    "lastPatientDone": 989,
    "overtimeMinutes": 0
   },
-  "patientSatisfaction": 24,
-  "hcwSatisfaction": 88.4,
+  "patientSatisfaction": 23.7,
+  "hcwSatisfaction": 89.9,
   "waitByVisitType": {
    "opd_general": {
-    "mean": 93.3,
+    "mean": 93.6,
     "max": 138,
     "count": 113
    },
    "anc_booking": {
-    "mean": 121.6,
+    "mean": 121.8,
     "max": 163,
     "count": 5
    },
@@ -59,7 +59,7 @@
     "count": 8
    },
    "anc_nurse_only": {
-    "mean": 111.2,
+    "mean": 112.1,
     "max": 198,
     "count": 14
    },
@@ -74,7 +74,7 @@
     "count": 2
    },
    "postnatal": {
-    "mean": 92.3,
+    "mean": 96,
     "max": 171,
     "count": 3
    },
@@ -100,27 +100,27 @@
    },
    "mo3": {
     "morning": 27,
-    "total": 175
+    "total": 172
    },
    "mo4": {
     "morning": 38,
-    "total": 271
+    "total": 263
    },
    "mo5": {
     "morning": 27,
-    "total": 196
+    "total": 194
    },
    "mo6": {
     "morning": 51,
-    "total": 280
+    "total": 270
    },
    "jk1": {
     "morning": 5,
-    "total": 134
+    "total": 149
    },
    "jk2": {
     "morning": 9,
-    "total": 163
+    "total": 148
    },
    "jm1": {
     "morning": 0,
@@ -132,7 +132,7 @@
    },
    "jm3": {
     "morning": 0,
-    "total": 140
+    "total": 137
    },
    "ppk1": {
     "morning": 31,
@@ -140,15 +140,15 @@
    },
    "pt1": {
     "morning": 17,
-    "total": 388
+    "total": 358
    },
    "pt2": {
     "morning": 0,
-    "total": 302
+    "total": 275
    },
    "pt3": {
     "morning": 1,
-    "total": 351
+    "total": 318
    },
    "jtmp1": {
     "morning": 110,
@@ -156,11 +156,11 @@
    },
    "ppf1": {
     "morning": 24,
-    "total": 168
+    "total": 166
    },
    "ppf2": {
     "morning": 32,
-    "total": 235
+    "total": 237
    },
    "jxr1": {
     "morning": 79,
@@ -263,11 +263,11 @@
     },
     {
      "staffId": "mo4",
-     "lunchStart": 791
+     "lunchStart": 782
     },
     {
      "staffId": "mo5",
-     "lunchStart": 790
+     "lunchStart": 780
     },
     {
      "staffId": "mo6",
@@ -280,11 +280,11 @@
    "lastPatientDone": 989,
    "overtimeMinutes": 0
   },
-  "patientSatisfaction": 37.2,
-  "hcwSatisfaction": 91.4,
+  "patientSatisfaction": 36.1,
+  "hcwSatisfaction": 91.9,
   "waitByVisitType": {
    "opd_general": {
-    "mean": 88,
+    "mean": 88.9,
     "max": 130,
     "count": 112
    },
@@ -309,12 +309,12 @@
     "count": 10
    },
    "child_health": {
-    "mean": 12.3,
-    "max": 27,
+    "mean": 32.8,
+    "max": 86,
     "count": 4
    },
    "anc_nurse_only": {
-    "mean": 55.7,
+    "mean": 61.9,
     "max": 89,
     "count": 9
    },
@@ -345,7 +345,7 @@
    },
    "mo3": {
     "morning": 21,
-    "total": 195
+    "total": 184
    },
    "mo4": {
     "morning": 49,
@@ -357,15 +357,15 @@
    },
    "mo6": {
     "morning": 48,
-    "total": 277
+    "total": 269
    },
    "jk1": {
     "morning": 16,
-    "total": 148
+    "total": 138
    },
    "jk2": {
     "morning": 8,
-    "total": 188
+    "total": 177
    },
    "jm1": {
     "morning": 38,
@@ -385,15 +385,15 @@
    },
    "pt1": {
     "morning": 16,
-    "total": 385
+    "total": 355
    },
    "pt2": {
     "morning": 0,
-    "total": 301
+    "total": 271
    },
    "pt3": {
     "morning": 0,
-    "total": 345
+    "total": 315
    },
    "jtmp1": {
     "morning": 112,
@@ -401,11 +401,11 @@
    },
    "ppf1": {
     "morning": 33,
-    "total": 193
+    "total": 191
    },
    "ppf2": {
     "morning": 66,
-    "total": 282
+    "total": 274
    },
    "jxr1": {
     "morning": 104,

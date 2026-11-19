@@ -23,7 +23,7 @@ export interface StationDef {
   group?: string;
   /**
    * A fixed lunch break [from, to) when the station closes even if patients are queuing
-   * (registration counters: 13:00–13:30). Anyone mid-service finishes that patient first.
+   * (registration counters: 12:30–13:30). Anyone mid-service finishes that patient first.
    */
   lunchBreak?: [Minute, Minute];
 }
