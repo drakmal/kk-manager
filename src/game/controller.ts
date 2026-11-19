@@ -8,6 +8,9 @@ import {
   type Minute,
   type PlanChange,
   type Sim,
+  type SopSettings,
+  type StaffId,
+  type StationId,
 } from '../sim/index';
 import { createClock, type GameClock, type Speed } from './clock';
 import { SCENARIOS } from './scenarios';
@@ -24,6 +27,10 @@ export interface DayController {
   readonly sim: Sim | null;
   readonly report: DayReport | null;
   readonly clock: GameClock;
+  /** The SOP the clinic is working to now, including changes still being briefed. Null outside the day. */
+  readonly liveSop: SopSettings | null;
+  /** Who sits where right now. Empty outside the day. */
+  liveRoster(): Record<StationId, StaffId[]>;
   setPlan(plan: DayPlan): void;
   setScenario(id: string): void;
   start(): void;
@@ -45,6 +52,7 @@ export function createController(data: GameData, seed: number): DayController {
   let scenarioId = 'biasa';
   let sim: Sim | null = null;
   let report: DayReport | null = null;
+  let liveSop: SopSettings | null = null;
   const clock = createClock();
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
@@ -63,6 +71,7 @@ export function createController(data: GameData, seed: number): DayController {
     plan = { ...plan, seed: nextSeed };
     sim = null;
     dayPlan = null;
+    liveSop = null;
     report = null;
     phase = 'plan';
     clock.speed = 0;
@@ -76,7 +85,15 @@ export function createController(data: GameData, seed: number): DayController {
     get scenarioId() { return scenarioId; },
     get sim() { return sim; },
     get report() { return report; },
+    get liveSop() { return liveSop; },
     clock,
+    liveRoster() {
+      const out: Record<StationId, StaffId[]> = {};
+      if (!sim) return out;
+      for (const s of data.stations) out[s.id] = [];
+      for (const s of sim.staff) if (s.station !== null) out[s.station]!.push(s.id);
+      return out;
+    },
 
     setPlan(next) {
       if (phase !== 'plan') throw new Error('The plan can only be changed before the day starts. Pause and apply a change instead.');
@@ -93,6 +110,7 @@ export function createController(data: GameData, seed: number): DayController {
       const scenario = SCENARIOS.find((s) => s.id === scenarioId)!;
       dayPlan = scenario.apply(structuredClone(plan), data);
       sim = createDaySim(data, dayPlan);
+      liveSop = structuredClone(dayPlan.sop);
       clock.speed = 1;
       phase = 'running';
       notify();
@@ -123,6 +141,7 @@ export function createController(data: GameData, seed: number): DayController {
         throw new Error('Changes can only be applied during the clinic day.');
       }
       const result = sim.applyChange(change);
+      if (change.sop) liveSop = structuredClone(change.sop);
       notify();
       return result;
     },
