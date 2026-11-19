@@ -16,7 +16,8 @@ jobs:
       - run: npm test
       - run: npm run build
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright is pinned to 1.57 (matches the browser cached on the dev laptop); it supports Ubuntu up to 24.04.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
