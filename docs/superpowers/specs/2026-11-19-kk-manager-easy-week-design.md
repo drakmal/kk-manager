@@ -1,5 +1,5 @@
 ---
-status: draft, waiting for the user's approval
+status: approved by the user on 2026-11-19
 supersedes: the player-facing parts of 2026-11-19-kk-manager-design.md (plan screen, SOP cards, isometric view, free play, save slots, 10-day campaign)
 keeps: that spec's simulation, scoring, accuracy rules and constraints
 ---
