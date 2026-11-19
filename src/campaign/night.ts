@@ -17,7 +17,7 @@ export const CARD_NAMES: Record<CardId, string> = {
   laluanKhas: 'Laluan Khas',
   pinjamDoktor: 'Pinjam Doktor OPD',
   temujanji: 'Temujanji Berperingkat',
-  kontingensiCcms: 'Kontingensi CCMS',
+  kontingensiCcms: 'Pelan Kontingensi CCMS',
   pasanganMentor: 'Pasangan Mentor',
 };
 

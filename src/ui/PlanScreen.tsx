@@ -1,14 +1,17 @@
 import { purposeColour } from '../game/appearance';
 import type { DayController } from '../game/controller';
+import type { CardId } from '../campaign/types';
 import type { GameData } from '../sim/index';
 import { RosterEditor } from './RosterEditor';
 import { ScenarioPicker } from './ScenarioPicker';
-import { SopCards } from './SopCards';
+import { SopCards, type MentorCard } from './SopCards';
 import { useController } from './useController';
 
 interface Props {
   controller: DayController;
   data: GameData;
+  /** Campaign days: a day label instead of the seed, no day-type picker, locked cards and the mentor card. */
+  campaign?: { dayLabel: string; unlocked: CardId[]; mentor: MentorCard | undefined };
 }
 
 export function PurposeLegend({ data }: { data: GameData }) {
@@ -24,7 +27,7 @@ export function PurposeLegend({ data }: { data: GameData }) {
   );
 }
 
-export function PlanScreen({ controller, data }: Props) {
+export function PlanScreen({ controller, data, campaign }: Props) {
   const c = useController(controller);
   const { plan } = c;
   const empty = data.stations.filter((s) => (plan.roster[s.id] ?? []).length === 0);
@@ -32,17 +35,20 @@ export function PlanScreen({ controller, data }: Props) {
   return (
     <div class="screen plan-screen">
       <header class="screen-head">
-        <h1>Pagi ini · Hari {plan.seed}</h1>
+        <h1>Pagi ini · {campaign ? campaign.dayLabel : `Hari ${plan.seed}`}</h1>
         <p class="hint">You are the Clinic Manager. Set the roster and the SOP for today, then open the clinic.</p>
       </header>
 
       <div class="plan-grid">
         <div>
-          <ScenarioPicker value={c.scenarioId} onChange={(id) => c.setScenario(id)} />
+          {!campaign && <ScenarioPicker value={c.scenarioId} onChange={(id) => c.setScenario(id)} />}
           <RosterEditor data={data} roster={plan.roster} onChange={(roster) => c.setPlan({ ...plan, roster })} />
         </div>
         <div>
-          <SopCards data={data} sop={plan.sop} onChange={(sop) => c.setPlan({ ...plan, sop })} />
+          <SopCards
+            data={data} sop={plan.sop} onChange={(sop) => c.setPlan({ ...plan, sop })}
+            unlocked={campaign?.unlocked} mentor={campaign?.mentor}
+          />
           <section class="card">
             <h2>Purpose of visit</h2>
             <PurposeLegend data={data} />

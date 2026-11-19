@@ -7,6 +7,7 @@ interface Props {
   data: GameData;
   lowGraphics: boolean;
   onLowGraphics(on: boolean): void;
+  dayName?: string;
 }
 
 const LUNCH_TEXT = {
@@ -18,7 +19,7 @@ const LUNCH_TEXT = {
 
 const SPEEDS: Speed[] = [1, 2, 4];
 
-export function Hud({ controller: c, data, lowGraphics, onLowGraphics }: Props) {
+export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName = 'Isnin' }: Props) {
   const sim = c.sim;
   if (!sim) return null;
   const scores = liveScores(sim, data);
@@ -30,7 +31,7 @@ export function Hud({ controller: c, data, lowGraphics, onLowGraphics }: Props) 
 
   return (
     <div class="hud" role="toolbar" aria-label="Clinic controls">
-      <span class="clock">Isnin {fmt(sim.now)}</span>
+      <span class="clock">{dayName} {fmt(sim.now)}</span>
       <button type="button" aria-pressed={paused} onClick={() => c.pause()}>Pause</button>
       {SPEEDS.map((s) => (
         <button key={s} type="button" aria-pressed={!paused && c.clock.speed === s} onClick={() => setSpeed(s)}>

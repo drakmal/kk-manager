@@ -100,3 +100,34 @@ table.waits td.num, table.waits th.num { text-align: right; font-variant-numeric
 /* Brand strip */
 .brand { position: fixed; left: 12px; bottom: 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; pointer-events: none; }
 .game-screen ~ .brand, .app:has(.game-screen) .brand { display: none; }
+
+/* Campaign: title, night, district */
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.title-screen, .night-screen, .district-screen { max-width: 760px; }
+.title-screen h1 { font-size: 40px; letter-spacing: 0.02em; }
+.slots .slot { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.slots .slot > span { flex: 1; font-weight: 700; }
+.slots .slot button.primary { padding: 6px 14px; }
+.slots .import { display: flex; gap: 10px; align-items: center; margin-top: 12px; font-size: 14px; }
+.night-screen { background: #1d2733; color: #e8eef3; border-radius: 0 0 var(--radius) var(--radius); min-height: 100vh; }
+.night-screen .hint { color: #a9b6c2; }
+.goodwill { display: inline-block; background: #2e3d4d; border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 700; }
+.phone { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.msg { background: #f7f9fb; color: var(--ink); border-radius: 14px 14px 14px 4px; padding: 10px 14px; max-width: 560px; }
+.msg .from { display: block; font-size: 13px; color: var(--accent); }
+.msg p { margin: 4px 0; }
+.msg-el { border-left: 4px solid var(--bad); }
+.msg-complaint { border-left: 4px solid var(--mid); }
+.msg .chosen { color: var(--good); font-weight: 700; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.choice { display: grid; gap: 2px; }
+.choice small { color: var(--bad) !important; margin: 0; }
+.night-screen .notice { color: #ffd79a; }
+.locked { opacity: 0.6; }
+.district-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
+.grade { font-size: 96px; font-weight: 900; line-height: 1; text-align: center; }
+.grade-A { color: var(--good); }
+.grade-B { color: var(--accent); }
+.grade-C { color: var(--mid); }
+.grade-D { color: var(--bad); }
+.remarks p { margin: 4px 0; }

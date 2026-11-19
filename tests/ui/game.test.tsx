@@ -91,3 +91,9 @@ test('low graphics toggle survives a localStorage that throws', () => {
   fireEvent.click(box);
   expect((screen.getByLabelText('Low graphics') as HTMLInputElement).checked).toBe(true);
 });
+
+test('the HUD clock uses the day name it is given', () => {
+  const c = started();
+  render(<GameScreen controller={c} data={data} dayName="Khamis" />);
+  expect(screen.getByText(new RegExp(`Khamis ${fmt(c.sim!.now)}`))).toBeTruthy();
+});

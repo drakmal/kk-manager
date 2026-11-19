@@ -10,6 +10,7 @@ import { useController } from './useController';
 interface Props {
   controller: DayController;
   data: GameData;
+  dayName?: string;
 }
 
 const KEY = 'kkm.lowGraphics';
@@ -30,7 +31,7 @@ function writeLowGraphics(on: boolean): void {
   }
 }
 
-export function GameScreen({ controller, data }: Props) {
+export function GameScreen({ controller, data, dayName }: Props) {
   const c = useController(controller);
   const [lowGraphics, setLowGraphics] = useState(readLowGraphics);
   const onLowGraphics = (on: boolean) => {
@@ -40,7 +41,7 @@ export function GameScreen({ controller, data }: Props) {
 
   return (
     <div class="game-screen">
-      <Hud controller={c} data={data} lowGraphics={lowGraphics} onLowGraphics={onLowGraphics} />
+      <Hud controller={c} data={data} lowGraphics={lowGraphics} onLowGraphics={onLowGraphics} dayName={dayName} />
       <div class="stage">
         <ClinicCanvas controller={c} data={data} lowGraphics={lowGraphics} />
         <Toasts controller={c} data={data} />

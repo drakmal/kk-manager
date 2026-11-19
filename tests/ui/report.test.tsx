@@ -55,3 +55,13 @@ test('report buttons replay the day or start a new one', () => {
   expect(c.phase).toBe('plan');
   expect(c.plan.seed).toBe(4);
 });
+
+test('in the campaign the report offers Continue to tonight instead of replay', () => {
+  const c = finished();
+  const onContinue = vi.fn();
+  render(<ReportScreen controller={c} data={data} onContinue={onContinue} dayLabel="Rabu · Hari 3" />);
+  expect(screen.getByRole('heading', { name: 'End of day · Rabu · Hari 3' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'New day' })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Continue to tonight' }));
+  expect(onContinue).toHaveBeenCalled();
+});

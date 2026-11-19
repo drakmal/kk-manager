@@ -89,3 +89,11 @@ test('the purpose-dot legend names every visit type', () => {
   setup();
   for (const v of data.visitTypes) expect(screen.getAllByText(v.label).length).toBeGreaterThan(0);
 });
+
+test('in the campaign the plan screen shows the day label, hides the day-type picker and locks cards', () => {
+  const controller = createController(data, 1);
+  render(<PlanScreen controller={controller} data={data} campaign={{ dayLabel: 'Selasa · Hari 2', unlocked: ['saringan'], mentor: undefined }} />);
+  expect(screen.getByRole('heading', { name: 'Pagi ini · Selasa · Hari 2' })).toBeTruthy();
+  expect(screen.queryByLabelText(/CCMS down pagi/)).toBeNull();
+  expect(screen.getByText('🔒 Laluan Khas (locked)')).toBeTruthy();
+});
