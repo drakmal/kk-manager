@@ -1,7 +1,7 @@
 import type { GameData, Minute, Sim, SimSnapshot } from '../sim/index';
 import { lookFor, purposeColour, type Look } from './appearance';
 import { pickLine, type JokeSituation } from './jokes';
-import { queueSpot, type ClinicLayout, type RoomLayout } from './layout';
+import { queueSpot, type AreaLayout, type ClinicLayout, type RoomLayout, type Tile } from './layout';
 
 export type Pose = 'stand' | 'sit';
 
@@ -28,6 +28,13 @@ export interface Person {
 export interface Scene {
   now: Minute;
   rooms: RoomLayout[];
+  /** Waiting areas and corridor (floors that aren't rooms). */
+  areas: AreaLayout[];
+  /** Floor size in tiles. */
+  width: number;
+  depth: number;
+  /** Overflow chairs, drawn as furniture. */
+  overflow: Tile[];
   people: Person[];
 }
 
@@ -150,5 +157,8 @@ export function buildScene(
       });
     }
   }
-  return { now: snap.now, rooms: layout.rooms, people };
+  return {
+    now: snap.now, rooms: layout.rooms, areas: layout.areas, width: layout.width, depth: layout.depth,
+    overflow: layout.overflow, people,
+  };
 }
