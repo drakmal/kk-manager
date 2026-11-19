@@ -28,9 +28,11 @@ export function makePatient(data: GameData, visitType: VisitTypeId, arrival: Min
   const steps: PlannedStep[] = [];
   for (const step of def.steps) {
     if (!rng.chance(step.chance ?? 1)) continue;
-    const station = data.stations.find((s) => s.id === step.station)!;
+    // A group step (e.g. "opdDoctor") takes its default time from the group's first room.
+    const station = data.stations.find((s) => s.id === step.station) ?? data.stations.find((s) => s.group === step.station)!;
     const [min, max] = step.minutes ?? station.minutes;
     let minutes = rng.int(min, max);
+    if (step.addOn && rng.chance(step.addOn.chance)) minutes += rng.int(step.addOn.minutes[0], step.addOn.minutes[1]);
     if (step.station === 'mchDoctor' && colour) {
       minutes = Math.ceil(minutes * data.tuning.colourDoctorMultiplier[colour]);
     }

@@ -21,6 +21,7 @@ export function defaultDayPlan(data: GameData, seed: number): DayPlan {
       pinjamDoktor: { enabled: false, queueThreshold: 6, maxDoctors: 1 },
       temujanji: { enabled: false, from: 480, to: 720, slotMinutes: 30, perSlot: 6 },
       kontingensiCcms: { printedList: false },
+      lunchOnTime: false,
     },
     events: [],
   };

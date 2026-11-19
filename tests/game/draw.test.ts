@@ -16,7 +16,7 @@ const patient = (id: number, visitType: string, waitMinutes = 0): Patient => ({
 });
 const staffState = (id: string, station: string): StaffState => ({
   id, station, servingPatient: null, remaining: 0, onLunch: false, lunchStart: null, lunchEnd: null,
-  unavailableUntil: null, idleMinutes: 0, idleMorning: 0, overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0,
+  unavailableUntil: null, idleMinutes: 0, idleMorning: 0, overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0, lastStartAt: null,
 });
 const sim = {
   patients: [patient(1, 'anc_doctor_only', 50), patient(2, 'anc_nurse_only'), patient(3, 'opd_general', 60)],

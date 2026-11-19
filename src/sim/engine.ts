@@ -27,6 +27,8 @@ export interface StaffState {
   overtimeMinutes: number;
   /** Mid-day plan changes this person has had to absorb. */
   changeCount: number;
+  /** The minute this person last started seeing a patient. */
+  lastStartAt: Minute | null;
 }
 
 export interface SimSnapshot {
@@ -48,9 +50,12 @@ export interface Sim {
   readonly patients: readonly Patient[];
   readonly staff: readonly StaffState[];
   readonly peakQueue: Readonly<Record<StationId, { size: number; at: Minute }>>;
-  /** Schedules a plan change for now + briefing delay. Changes apply in the order they were made. */
-  applyChange(change: PlanChange): { effectiveAt: Minute };
-  readonly pendingChanges: readonly { change: PlanChange; at: Minute }[];
+  /**
+   * Schedules a plan change for now + briefing delay, in the order made.
+   * `immediate` applies it before the next minute; `free` costs staff no change penalty.
+   */
+  applyChange(change: PlanChange, opts?: { immediate?: boolean; free?: boolean }): { effectiveAt: Minute };
+  readonly pendingChanges: readonly { change: PlanChange; at: Minute; free: boolean }[];
 }
 
 export interface SimOptions {
@@ -131,16 +136,19 @@ export function createSim(
     overloadMinutes: 0,
     overtimeMinutes: 0,
     changeCount: 0,
+    lastStartAt: null,
   }));
 
-  const pendingChanges: { change: PlanChange; at: Minute }[] = [];
+  const pendingChanges: { change: PlanChange; at: Minute; free: boolean }[] = [];
   /** Staff waiting to move (between patients) after a roster change: staff id → new station or null. */
   const pendingMoves = new Map<StaffId, StationId | null>();
 
   const applyDueChanges = (t: Minute) => {
     while (pendingChanges.length > 0 && pendingChanges[0]!.at <= t) {
-      const { change } = pendingChanges.shift()!;
+      const { change, free } = pendingChanges.shift()!;
       if (change.sop) plan.sop = structuredClone(change.sop);
+      // Same array object: the event hooks hold a reference to it.
+      if (change.events) plan.events.splice(0, plan.events.length, ...structuredClone(change.events));
       if (change.roster) {
         const listed = new Set(Object.keys(change.roster));
         const target = new Map<StaffId, StationId>();
@@ -157,7 +165,7 @@ export function createSim(
           else pendingMoves.delete(s.id);
         }
       }
-      for (const s of staff) if (s.station !== null) s.changeCount += 1;
+      if (!free) for (const s of staff) if (s.station !== null) s.changeCount += 1;
     }
     for (const [id, next] of [...pendingMoves]) {
       const s = staff.find((p) => p.id === id)!;
@@ -173,7 +181,27 @@ export function createSim(
 
   let now: Minute = DAY_START;
 
-  const enqueue = (patient: Patient, station: StationId, t: Minute) => {
+  /** Room groups: the counter gives out room numbers in turn, skipping rooms nobody is seated in. */
+  const groupTurn = new Map<string, number>();
+  const assignRoom = (group: string): StationId => {
+    const rooms = data.stations.filter((s) => s.group === group);
+    const staffed = rooms.filter((r) => staff.some((s) => s.station === r.id));
+    const pool = staffed.length > 0 ? staffed : rooms;
+    const turn = groupTurn.get(group) ?? 0;
+    groupTurn.set(group, turn + 1);
+    return pool[turn % pool.length]!.id;
+  };
+  const resolveRooms = (steps: PlannedStep[]) => {
+    for (const step of steps) if (!stationById.has(step.station)) step.station = assignRoom(step.station);
+  };
+
+  const enqueue = (patient: Patient, stationIn: StationId, t: Minute) => {
+    let station = stationIn;
+    if (!stationById.has(station)) {
+      // A group step reached without registration (scripted patients): assign now.
+      const step = (patient.route ?? patient.steps)[patient.stepIndex]!;
+      station = step.station = assignRoom(station);
+    }
     queues.get(station)!.push({ patientId: patient.id, joinedAt: t });
   };
 
@@ -207,6 +235,7 @@ export function createSim(
   const advance = (p: Patient, station: StationDef, t: Minute) => {
     if (station.role === 'clerk' && p.route === null) {
       p.route = filterRoute(p.steps.slice(p.stepIndex + 1), p.visitType, plan.sop, hooks.appointmentInfoAvailable(t));
+      resolveRooms(p.route);
       p.stepIndex = 0;
     } else {
       p.stepIndex++;
@@ -284,7 +313,7 @@ export function createSim(
         t <= tuning.lunchLateCutoff &&
         s.servingPatient === null &&
         (s.unavailableUntil === null || t >= s.unavailableUntil) &&
-        queues.get(s.station)!.length === 0
+        (queues.get(s.station)!.length === 0 || (plan.sop.lunchOnTime && stationById.get(s.station)!.role === 'doctor'))
       ) {
         s.onLunch = true;
         s.lunchStart = t;
@@ -298,6 +327,7 @@ export function createSim(
         const p = takeNext(station.id);
         if (!p) break;
         s.servingPatient = p.id;
+        s.lastStartAt = t;
         // Personal speed first, then the event modifiers (CCMS, printer).
         const speed = Math.max(0.1, plan.staffSpeed?.[s.id] ?? 1);
         const base = speed === 1 ? currentStep(p)!.minutes : Math.ceil(currentStep(p)!.minutes * speed);
@@ -366,9 +396,11 @@ export function createSim(
     patients,
     staff,
     peakQueue,
-    applyChange: (change) => {
-      const at = now + data.tuning.briefingDelayMinutes;
-      pendingChanges.push({ change: structuredClone(change), at });
+    applyChange: (change, opts = {}) => {
+      const at = opts.immediate ? now : now + data.tuning.briefingDelayMinutes;
+      pendingChanges.push({ change: structuredClone(change), at, free: opts.free === true });
+      // Keep the queue in time order (an immediate change may jump ahead of a briefed one); sort is stable.
+      pendingChanges.sort((a, b) => a.at - b.at);
       return { effectiveAt: at };
     },
     pendingChanges,

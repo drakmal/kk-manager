@@ -90,7 +90,7 @@ test('staffScore subtracts the mid-day change penalty', () => {
   const s: StaffState = {
     id: 'mo1', station: 'mchDoctor', servingPatient: null, remaining: 0, onLunch: false, lunchStart: 780,
     lunchEnd: 840, unavailableUntil: null, idleMinutes: 0, idleMorning: 0, overloadMinutes: 0,
-    overtimeMinutes: 0, changeCount: 2,
+    overtimeMinutes: 0, changeCount: 2, lastStartAt: null,
   };
   expect(staffScore(s, real.tuning)).toBe(100 - 2 * real.tuning.midDayChangePenalty);
   expect(real.tuning.midDayChangePenalty).toBe(5);

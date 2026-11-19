@@ -3,7 +3,7 @@ import staff from './data/staff.json';
 import stations from './data/stations.json';
 import tuning from './data/tuning.json';
 import visitTypes from './data/visitTypes.json';
-import type { GameData } from './types';
+import type { GameData, StationDef } from './types';
 
 const SHARE_TOLERANCE = 1e-6;
 
@@ -37,9 +37,15 @@ export function validateGameData(raw: unknown): GameData {
   }
 
   const stationIds = new Set<string>();
+  const groupRole = new Map<string, string>();
   for (const s of data.stations) {
     if (stationIds.has(s.id)) fail(`duplicate station id "${s.id}"`);
     stationIds.add(s.id);
+    if (s.group !== undefined) {
+      const role = groupRole.get(s.group);
+      if (role !== undefined && role !== s.role) fail(`group "${s.group}" mixes roles ${role} and ${s.role}`);
+      groupRole.set(s.group, s.role);
+    }
     if (!isRange(s.minutes)) fail(`station "${s.id}" has a bad minutes range ${JSON.stringify(s.minutes)}`);
     if (!Number.isInteger(s.seats) || s.seats < 0) fail(`station "${s.id}" has a bad seat count ${s.seats}`);
   }
@@ -51,7 +57,12 @@ export function validateGameData(raw: unknown): GameData {
     if (!(v.share >= 0)) fail(`visit type "${v.id}" has a bad share ${v.share}`);
     if (!Array.isArray(v.steps) || v.steps.length === 0) fail(`visit type "${v.id}" has no steps`);
     v.steps.forEach((step, i) => {
-      if (!stationIds.has(step.station)) fail(`visit type "${v.id}" step ${i} uses unknown station "${step.station}"`);
+      if (!stationIds.has(step.station) && !groupRole.has(step.station)) {
+        fail(`visit type "${v.id}" step ${i} uses unknown station or group "${step.station}"`);
+      }
+      if (step.addOn !== undefined && (!(step.addOn.chance >= 0 && step.addOn.chance <= 1) || !isRange(step.addOn.minutes))) {
+        fail(`visit type "${v.id}" step ${i} has a bad add-on ${JSON.stringify(step.addOn)}`);
+      }
       if (step.minutes !== undefined && !isRange(step.minutes)) {
         fail(`visit type "${v.id}" step ${i} has a bad minutes range ${JSON.stringify(step.minutes)}`);
       }
@@ -88,4 +99,9 @@ export function validateGameData(raw: unknown): GameData {
   if (!data.tuning || typeof data.tuning.hardStop !== 'number') fail('tuning missing');
   if (typeof data.tuning.midDayChangePenalty !== 'number') fail('tuning.midDayChangePenalty missing');
   return data;
+}
+
+/** The rooms in a group, in data order. Empty when no station has that group. */
+export function groupRooms(data: GameData, group: string): StationDef[] {
+  return data.stations.filter((s) => s.group === group);
 }

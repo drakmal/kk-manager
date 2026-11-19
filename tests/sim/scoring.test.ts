@@ -11,7 +11,7 @@ const done = (wait: number, crowd = 0) => ({ ...scripted(0, 480, []), waitMinute
 const staffState = (over: Partial<StaffState>): StaffState => ({
   id: 'mo1', station: 'mchDoctor', servingPatient: null, remaining: 0, onLunch: false,
   lunchStart: 780, lunchEnd: 840, unavailableUntil: null, idleMinutes: 0, idleMorning: 0,
-  overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0, ...over,
+  overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0, lastStartAt: null, ...over,
 });
 
 test('patient within patience scores 100; 10 over → 90; crowd 4 min → -2', () => {

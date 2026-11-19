@@ -16,7 +16,7 @@ const patient = (id: number, visitType: string, waitMinutes = 0): Patient => ({
 });
 const staffState = (id: string, station: string, over: Partial<StaffState> = {}): StaffState => ({
   id, station, servingPatient: null, remaining: 0, onLunch: false, lunchStart: null, lunchEnd: null,
-  unavailableUntil: null, idleMinutes: 0, idleMorning: 0, overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0, ...over,
+  unavailableUntil: null, idleMinutes: 0, idleMorning: 0, overloadMinutes: 0, overtimeMinutes: 0, changeCount: 0, lastStartAt: null, ...over,
 });
 const snap = (now: number, stations: SimSnapshot['stations']): SimSnapshot => ({
   now,

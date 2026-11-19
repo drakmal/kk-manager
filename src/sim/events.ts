@@ -1,9 +1,22 @@
 import { createSim, DAY_START, type EngineHooks, type EngineInternals, type Sim, type SimOptions, type StaffState } from './engine';
 import { makePatient } from './patients';
-import type { ClinicEvent, DayPlan, GameData, Minute, StationDef, Tuning } from './types';
+import type { ClinicEvent, DayPlan, GameData, Minute, StationDef, StationId, Tuning } from './types';
 
 const MCH_DOCTOR = 'mchDoctor';
 const OPD_DOCTOR = 'opdDoctor';
+
+/** Free right now: not at lunch and not away (someone mid-consultation counts; they finish first). */
+const freeAt = (s: StaffState, t: Minute) => !s.onLunch && (s.unavailableUntil === null || t >= s.unavailableUntil);
+
+/** The doctor an emergency would take from `station` now: the first free one seated there, in staff order. */
+export function emergencyDoctor(sim: Sim, station: StationId): StaffState | null {
+  return sim.staff.find((s) => s.station === station && freeAt(s, sim.now)) ?? null;
+}
+
+/** Where an emergency takes its doctor from when the event doesn't say: the first OPD doctor room. */
+export function defaultEmergencyStation(data: GameData): StationId {
+  return data.stations.find((s) => s.group === OPD_DOCTOR)?.id ?? OPD_DOCTOR;
+}
 
 /** True while an event of this kind covers minute t. Windows are [from, to). */
 export function isActive(events: ClinicEvent[], kind: 'ccmsDown' | 'printerDown', t: Minute): boolean {
@@ -35,11 +48,11 @@ function eventHooks(x: EngineInternals): Partial<EngineHooks> {
 
   const byStaffOrder = (a: StaffState, b: StaffState) =>
     data.staff.findIndex((p) => p.id === a.id) - data.staff.findIndex((p) => p.id === b.id);
-  const opdDoctors = () => staff.filter((s) => s.station === OPD_DOCTOR).sort(byStaffOrder);
+  const opdRooms = new Set(data.stations.filter((s) => s.id === OPD_DOCTOR || s.group === OPD_DOCTOR).map((s) => s.id));
+  const opdDoctors = () => staff.filter((s) => s.station !== null && opdRooms.has(s.station)).sort(byStaffOrder);
 
-  const startEmergency = (t: Minute, range: [number, number]) => {
-    const free = (s: StaffState) => !s.onLunch && (s.unavailableUntil === null || t >= s.unavailableUntil);
-    const doctor = opdDoctors().find(free);
+  const startEmergency = (t: Minute, range: [number, number], station: StationId) => {
+    const doctor = staff.filter((s) => s.station === station).sort(byStaffOrder).find((s) => freeAt(s, t));
     if (!doctor) return;
     const duration = rng.int(range[0], range[1]);
     // A doctor who is mid-consultation finishes that patient first, then goes.
@@ -78,7 +91,7 @@ function eventHooks(x: EngineInternals): Partial<EngineHooks> {
         if (e.kind === 'influx' && e.at === t) {
           for (let i = 0; i < e.count; i++) x.addPatient(makePatient(data, e.visitType, t, nextId++, rng));
         }
-        if (e.kind === 'emergencyWalkIn' && e.at === t) startEmergency(t, e.minutes);
+        if (e.kind === 'emergencyWalkIn' && e.at === t) startEmergency(t, e.minutes, e.station ?? defaultEmergencyStation(data));
         if (e.kind === 'staffAway' && Math.max(e.from, DAY_START) === t && t < e.to) {
           // Service already under way carries on; the person just can't take anyone new until `to`.
           const s = staff.find((p) => p.id === e.staffId);
