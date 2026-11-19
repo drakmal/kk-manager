@@ -101,3 +101,22 @@ purpose of their visit.
 - Postnatal visit schedule (4th edition, chapter 4, about pages 139–158).
 - Child health and immunisation clinic flow and timings.
 - OPD-specific guidance (for the lighter OPD simulation).
+
+## KK types (Polisi Operasi Klinik Kesihatan 2024, Jadual 1 and staffing table)
+
+Klinik kesihatan are classed Jenis 1 to 7 by mean daily attendance (plus "Super Jenis 1", KKKL, over 2000 a day).
+
+| Type | Patients a day | Services (skop perkhidmatan) |
+|---|---|---|
+| Jenis 1 | over 800 | 15: OPD, MCH (Ibu dan Anak), emergency, radiology, primary-care lab, pharmacy, dental, nutrition, dietetics, optometry, physiotherapy, occupational therapy, speech therapy, psychology (counselling), medical social work |
+| Jenis 3 | 300–500 | the same 15 as Jenis 1 |
+| Jenis 4 | 150–300 | 12: OPD, MCH, emergency, radiology, nutrition, dietetics, medical social work, primary-care lab, pharmacy, physiotherapy, occupational therapy, dental (no optometry, speech therapy or psychology) |
+
+Selected staffing norms from the same table (Jenis 1 / 3 / 4):
+- Family medicine specialists: 6 / 3 / 1. Medical officers: 32 / 16 / 9.
+- Pharmacists 22 / 9 / 6. Assistant pharmacists (U29–U36) 14 / 5 / 4.
+- Assistant medical officers (PPP, U29–U36 band) 20 / 14 / 11.
+- Lab technologists (U29–U36) 10 / 5 / 3. X-ray radiographers (U29–U36) 4 / 3 / 2.
+- Healthcare assistants (PPK, U11–U16) 24 / 14 / 8.
+
+The game's current placeholder volume (40 MCH + 120 OPD = 160 a day) sits at the bottom of Jenis 4.
