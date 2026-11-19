@@ -10,7 +10,7 @@ Planned home: `drakmal.com/kk-manager` (GitHub Pages, deployed by `.github/workf
 
 ## Run it
 
-Needs Node 20 or later.
+Needs Node 22.12 or later (Node 24 recommended).
 
 ```
 npm install
