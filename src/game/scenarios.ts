@@ -44,9 +44,10 @@ export const SCENARIOS: Scenario[] = [
     id: 'doktorEL',
     label: 'Doktor EL',
     blurb: 'Dr. Hafiz is on emergency leave. One MCH doctor seat is empty.',
+    // On leave means not in any room, wherever the player had put them.
     apply: (plan) => ({
       ...plan,
-      roster: { ...plan.roster, mchDoctor: (plan.roster.mchDoctor ?? []).filter((id) => id !== 'mo2') },
+      roster: Object.fromEntries(Object.entries(plan.roster).map(([station, ids]) => [station, ids.filter((id) => id !== 'mo2')])),
     }),
   },
 ];

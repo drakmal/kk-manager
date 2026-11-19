@@ -53,6 +53,8 @@ export function createController(data: GameData, seed: number): DayController {
   let sim: Sim | null = null;
   let report: DayReport | null = null;
   let liveSop: SopSettings | null = null;
+  /** The last roster the player asked for mid-day; staff move to it between patients. */
+  let requestedRoster: Record<StationId, StaffId[]> | null = null;
   const clock = createClock();
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
@@ -72,6 +74,7 @@ export function createController(data: GameData, seed: number): DayController {
     sim = null;
     dayPlan = null;
     liveSop = null;
+    requestedRoster = null;
     report = null;
     phase = 'plan';
     clock.speed = 0;
@@ -92,6 +95,8 @@ export function createController(data: GameData, seed: number): DayController {
       if (!sim) return out;
       for (const s of data.stations) out[s.id] = [];
       for (const s of sim.staff) if (s.station !== null) out[s.station]!.push(s.id);
+      // A change still being briefed (or waiting for someone to finish a patient) is what the clinic is moving to.
+      if (requestedRoster) for (const [station, ids] of Object.entries(requestedRoster)) out[station] = [...ids];
       return out;
     },
 
@@ -142,6 +147,7 @@ export function createController(data: GameData, seed: number): DayController {
       }
       const result = sim.applyChange(change);
       if (change.sop) liveSop = structuredClone(change.sop);
+      if (change.roster) requestedRoster = { ...(requestedRoster ?? {}), ...structuredClone(change.roster) };
       notify();
       return result;
     },

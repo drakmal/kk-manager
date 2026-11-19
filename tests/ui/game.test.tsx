@@ -42,6 +42,17 @@ test('pause panel apply calls applyChange and shows the effective time', () => {
   expect(c.phase).toBe('running');
 });
 
+test('applying the same roster change twice only charges once', () => {
+  const c = started();
+  render(<GameScreen controller={c} data={data} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
+  fireEvent.change(screen.getByLabelText('Bilik Doktor KIA seat 2'), { target: { value: 'mo3' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
+  expect(c.sim!.pendingChanges).toHaveLength(1);
+  expect(screen.getByText('No changes to apply.')).toBeTruthy();
+});
+
 test('a CCMS toast appears once the clock passes the event start, and can be dismissed', () => {
   const c = started('ccmsPagi');
   render(<GameScreen controller={c} data={data} />);

@@ -69,6 +69,26 @@ test('doktorEL scenario leaves one MCH doctor; ccmsPagi adds the event', () => {
   expect(d.plan.events).toEqual([]); // the player's own plan is untouched
 });
 
+test('doktorEL keeps the doctor on leave out of every room, even if the player moved them', () => {
+  const c = createController(data, 1);
+  const plan = structuredClone(c.plan);
+  plan.roster.mchDoctor = ['mo1', 'mo3'];
+  plan.roster.opdDoctor = ['mo2', 'mo4', 'mo5', 'mo6'];
+  c.setPlan(plan);
+  c.setScenario('doktorEL');
+  c.start();
+  expect(c.sim!.staff.find((s) => s.id === 'mo2')!.station).toBeNull();
+});
+
+test('liveRoster shows a roster change still being briefed', () => {
+  const c = createController(data, 1);
+  c.start();
+  c.pause();
+  const moved = { ...c.liveRoster(), mchDoctor: ['mo1', 'mo3'], opdDoctor: ['mo4', 'mo5', 'mo6'] };
+  c.applyChange({ roster: moved });
+  expect(c.liveRoster().mchDoctor).toEqual(['mo1', 'mo3']);
+});
+
 test('setScenario rejects an unknown id', () => {
   expect(() => createController(data, 1).setScenario('nope')).toThrow(/nope/);
 });
