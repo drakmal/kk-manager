@@ -4,6 +4,15 @@ import { pickLine, type JokeSituation } from './jokes';
 import { queueSpot, type AreaLayout, type ClinicLayout, type RoomLayout, type Tile } from './layout';
 
 export type Pose = 'stand' | 'sit';
+export type Mood = '😊' | '😐' | '😟' | '😠';
+
+/** A patient's mood from how long they've waited: under 15, under 30, under 60 minutes, then past their patience. */
+export function moodFor(waitMinutes: number): Mood {
+  if (waitMinutes < 15) return '😊';
+  if (waitMinutes < 30) return '😐';
+  if (waitMinutes < 60) return '😟';
+  return '😠';
+}
 
 export interface Spot {
   x: number;
@@ -23,6 +32,8 @@ export interface Person {
   tag: string | null;
   baby: boolean;
   bubble: string | null;
+  /** Patients only. */
+  mood: Mood | null;
 }
 
 export interface Scene {
@@ -148,14 +159,14 @@ export function buildScene(
       const id = key.slice(2);
       people.push({
         key, kind: 'staff', ...spot, look: lookFor(key, roleOf.get(id) ?? 'ppk'),
-        tag: null, baby: false, bubble: speech.get(key) ?? null,
+        tag: null, baby: false, bubble: speech.get(key) ?? null, mood: null,
       });
     } else {
       const p = patientById.get(Number(key.slice(1)));
       people.push({
         key, kind: 'patient', ...spot, look: lookFor(key, 'patient'),
         tag: p ? purposeColour(p.visitType) : null, baby: p ? BABY_VISITS.has(p.visitType) : false,
-        bubble: speech.get(key) ?? null,
+        bubble: speech.get(key) ?? null, mood: p && p.doneAt === null ? moodFor(p.waitMinutes) : null,
       });
     }
   }

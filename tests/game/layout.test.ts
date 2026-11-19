@@ -1,73 +1,84 @@
 import { buildLayout, queueSpot, type RoomLayout } from '../../src/game/layout';
-import { loadGameData } from '../../src/sim/data';
+import { loadGameData } from '../../src/sim/index';
 
 const data = loadGameData();
 const layout = buildLayout(data);
-const key = (t: { x: number; y: number }) => `${t.x},${t.y}`;
-const inside = (t: { x: number; y: number }, r: { x: number; y: number; w: number; d: number }) =>
-  t.x >= r.x && t.x < r.x + r.w && t.y >= r.y && t.y < r.y + r.d;
+const room = (id: string) => layout.rooms.find((r) => r.station === id)!;
+const inside = (t: { x: number; y: number }, r: RoomLayout) => t.x >= r.x && t.x < r.x + r.w && t.y >= r.y && t.y < r.y + r.d;
 
-test('every station has a room with enough seats and ≥ 12 queue spots', () => {
+test('the floor is 32 × 20 tiles with the entrance at the bottom', () => {
+  expect([layout.width, layout.depth]).toEqual([32, 20]);
+  expect(layout.entrance.y).toBeGreaterThan(19);
+});
+
+test('every station has a room with its seats; stations with seats have ≥ 12 queue spots', () => {
   for (const s of data.stations) {
-    const room = layout.rooms.find((r) => r.station === s.id);
-    expect(room, s.id).toBeDefined();
-    expect(room!.label).toBe(s.label);
-    expect(room!.seats.length).toBeGreaterThanOrEqual(s.seats);
-    expect(room!.chairs.length).toBe(room!.seats.length);
-    expect(room!.queue.length).toBeGreaterThanOrEqual(12);
+    const r = room(s.id);
+    expect(r.seats).toHaveLength(s.seats);
+    expect(r.chairs).toHaveLength(s.seats);
+    if (s.seats > 0) expect(r.queue.length).toBeGreaterThanOrEqual(12);
   }
-  expect(layout.overflow.length).toBeGreaterThanOrEqual(40);
-});
-
-test('doctor rooms have exactly 2 desks per room (OPD is one wide room with 4)', () => {
-  expect(layout.rooms.find((r) => r.station === 'mchDoctor')!.seats).toHaveLength(2);
-  expect(layout.rooms.find((r) => r.station === 'opdDoctor')!.seats).toHaveLength(4);
-});
-
-test('MCH wing on the left, OPD on the right, shared stations and entrance along the front', () => {
-  const room = (id: string) => layout.rooms.find((r) => r.station === id)!;
-  const mid = layout.width / 2;
-  for (const id of ['mchRegistration', 'mchTriage', 'ancNurse', 'mchDoctor', 'immunisation']) expect(room(id).x + room(id).w).toBeLessThanOrEqual(mid);
-  for (const id of ['opdRegistration', 'opdTriage', 'opdDoctor']) expect(room(id).x).toBeGreaterThanOrEqual(mid);
-  for (const id of ['primaryTriage', 'lab', 'pharmacy']) expect(room(id).y + room(id).d).toBe(layout.depth);
-  expect(Math.abs(layout.entrance.x - mid)).toBeLessThanOrEqual(2);
 });
 
 test('rooms stay inside the floor and do not overlap', () => {
-  const rooms: RoomLayout[] = layout.rooms;
-  for (const r of rooms) {
+  for (const r of layout.rooms) {
     expect(r.x).toBeGreaterThanOrEqual(0);
     expect(r.y).toBeGreaterThanOrEqual(0);
     expect(r.x + r.w).toBeLessThanOrEqual(layout.width);
     expect(r.y + r.d).toBeLessThanOrEqual(layout.depth);
   }
-  for (let i = 0; i < rooms.length; i++) {
-    for (let j = i + 1; j < rooms.length; j++) {
-      const a = rooms[i]!, b = rooms[j]!;
+  for (const a of layout.rooms) {
+    for (const b of layout.rooms) {
+      if (a === b) continue;
       const overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.d && b.y < a.y + a.d;
       expect(overlap, `${a.station} overlaps ${b.station}`).toBe(false);
     }
   }
 });
 
-test('seats and chairs sit inside their room', () => {
-  for (const r of layout.rooms) for (const t of [...r.seats, ...r.chairs]) expect(inside(t, r), r.station).toBe(true);
+test('MCH wing on the left, OPD rooms on the right, the middle column in between', () => {
+  for (const id of ['ancNurse', 'mchDoctor', 'immunisation']) expect(room(id).x + room(id).w).toBeLessThanOrEqual(13);
+  for (const id of ['opdRoom1', 'opdRoom2']) expect(room(id).x).toBeGreaterThanOrEqual(19);
+  for (const id of ['lab', 'xray', 'emergency', 'physio', 'nutrition']) {
+    expect(room(id).x).toBeGreaterThanOrEqual(13);
+    expect(room(id).x + room(id).w).toBeLessThanOrEqual(19);
+  }
+  for (const id of ['mchRegistration', 'mchTriage', 'primaryTriage', 'opdRegistration', 'opdTriage', 'pharmacy']) {
+    expect(room(id).y).toBeGreaterThanOrEqual(15);
+  }
 });
 
-test('all seats, chairs, queue spots and overflow chairs are distinct tiles', () => {
-  const all = [...layout.rooms.flatMap((r) => [...r.seats, ...r.chairs, ...r.queue]), ...layout.overflow].map(key);
-  expect(new Set(all).size).toBe(all.length);
+test('seats and chairs sit inside their room; furniture too', () => {
+  for (const r of layout.rooms) {
+    for (const t of [...r.seats, ...r.chairs]) expect(inside(t, r), r.station).toBe(true);
+    for (const f of r.furniture) {
+      expect(f.x).toBeGreaterThanOrEqual(r.x);
+      expect(f.y).toBeGreaterThanOrEqual(r.y);
+      expect(f.x + f.w).toBeLessThanOrEqual(r.x + r.w);
+      expect(f.y + f.h).toBeLessThanOrEqual(r.y + r.d);
+    }
+  }
 });
 
-test('buildLayout throws naming an unknown station', () => {
-  const d = structuredClone(data);
-  d.stations.push({ id: 'xray', unit: 'shared', label: 'X-ray', role: 'lab', seats: 1, minutes: [5, 5], opensAt: 480 });
-  expect(() => buildLayout(d)).toThrow(/xray/);
+test('the MCH doctor room has the ultrasound; X-ray has its machine; beds where they belong', () => {
+  expect(room('mchDoctor').furniture.map((f) => f.kind)).toContain('ultrasound');
+  expect(room('xray').furniture.map((f) => f.kind)).toContain('xray');
+  for (const id of ['ancNurse', 'mchDoctor', 'emergency', 'physio']) expect(room(id).furniture.map((f) => f.kind)).toContain('bed');
 });
 
-test('queueSpot overflows into the shared chairs', () => {
-  const room = layout.rooms.find((r) => r.station === 'ancNurse')!;
-  expect(queueSpot(layout, 'ancNurse', 0)).toEqual(room.queue[0]);
-  expect(queueSpot(layout, 'ancNurse', room.queue.length)).toEqual(layout.overflow[0]);
-  expect(queueSpot(layout, 'ancNurse', room.queue.length + layout.overflow.length)).toEqual(layout.overflow[0]);
+test('queue spots and seats are distinct tiles', () => {
+  const tiles = layout.rooms.flatMap((r) => [...r.seats, ...r.chairs, ...r.queue]).map((t) => `${t.x},${t.y}`);
+  expect(new Set(tiles).size).toBe(tiles.length);
+});
+
+test('labels say MCH, never KIA', () => {
+  for (const a of layout.areas) expect(a.label).not.toMatch(/KIA/);
+  for (const r of layout.rooms) expect(r.label).not.toMatch(/KIA/);
+});
+
+test('queueSpot overflows into the shared chairs; unknown stations throw', () => {
+  const r = room('opdRoom1');
+  expect(queueSpot(layout, 'opdRoom1', 0)).toEqual(r.queue[0]);
+  expect(queueSpot(layout, 'opdRoom1', r.queue.length)).toEqual(layout.overflow[0]);
+  expect(() => buildLayout({ ...data, stations: [...data.stations, { ...data.stations[0]!, id: 'dental' }] })).toThrow(/dental/);
 });

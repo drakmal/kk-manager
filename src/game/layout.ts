@@ -5,6 +5,17 @@ export interface Tile {
   y: number;
 }
 
+export type FurnitureKind = 'desk' | 'bed' | 'ultrasound' | 'xray' | 'counter' | 'shelf';
+
+/** A piece of furniture, in tiles (top-left corner and size). */
+export interface Furniture {
+  kind: FurnitureKind;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface RoomLayout {
   station: StationId;
   label: string;
@@ -19,9 +30,11 @@ export interface RoomLayout {
   chairs: Tile[];
   /** Where this station's queue sits, front of the queue first. */
   queue: Tile[];
+  /** Beds, machines, counters (drawn; not used by the simulation). */
+  furniture: Furniture[];
 }
 
-/** Floor areas that aren't rooms (waiting areas, corridor). */
+/** Floor areas that aren't rooms (waiting areas, corridor, lobby). */
 export interface AreaLayout {
   label: string;
   x: number;
@@ -42,40 +55,54 @@ export interface ClinicLayout {
   overflow: Tile[];
 }
 
-const WIDTH = 30;
+const WIDTH = 32;
 const DEPTH = 20;
 const QUEUE_SPOTS = 12;
+/** Rooms nobody queues for (the emergency room) still get a couple of spots. */
+const SMALL_QUEUE = 2;
 
 type Rect = { x: number; y: number; w: number; d: number };
 
 /**
- * The fixed floor plan. Back row: ANC nurse, MCH doctor, OPD doctors. Middle:
- * the MCH waiting area (left), corridor, OPD waiting area (right). Front row,
- * along y = DEPTH: counters, triage, lab and pharmacy, with the entrance in the middle.
+ * KK Jenis 4 seen from above. Left wing MCH, right wing OPD, a middle column
+ * of shared rooms, and the counters, triage and pharmacy along the bottom,
+ * with the entrance in the middle.
  */
-const ROOMS: Record<string, Rect & { floor: string }> = {
-  ancNurse: { x: 0, y: 0, w: 7, d: 5, floor: '#d6e9e2' },
-  mchDoctor: { x: 7, y: 0, w: 6, d: 5, floor: '#d9e2f1' },
-  opdDoctor: { x: 15, y: 0, w: 15, d: 5, floor: '#dbe4ee' },
-  immunisation: { x: 0, y: 5, w: 5, d: 5, floor: '#eddfe9' },
-  mchRegistration: { x: 0, y: 14, w: 5, d: 6, floor: '#eadcc0' },
-  mchTriage: { x: 5, y: 14, w: 4, d: 6, floor: '#e3dccb' },
-  lab: { x: 9, y: 14, w: 4, d: 6, floor: '#e4e9ec' },
-  primaryTriage: { x: 13, y: 14, w: 4, d: 6, floor: '#e7e2d8' },
-  pharmacy: { x: 17, y: 14, w: 5, d: 6, floor: '#e2ecdf' },
-  opdRegistration: { x: 22, y: 14, w: 4, d: 6, floor: '#eadcc0' },
-  opdTriage: { x: 26, y: 14, w: 4, d: 6, floor: '#e3dccb' },
+const ROOMS: Record<string, Rect & { floor: string; furniture?: Furniture[] }> = {
+  ancNurse: { x: 0, y: 0, w: 7, d: 5, floor: '#d6e9e2', furniture: [{ kind: 'bed', x: 5.4, y: 0.4, w: 1.4, h: 2.6 }] },
+  mchDoctor: {
+    x: 7, y: 0, w: 6, d: 5, floor: '#d9e2f1',
+    furniture: [{ kind: 'bed', x: 11.6, y: 0.4, w: 1.2, h: 2.4 }, { kind: 'ultrasound', x: 11.6, y: 3.0, w: 1.0, h: 1.0 }],
+  },
+  immunisation: { x: 0, y: 5, w: 5, d: 5, floor: '#eddfe9', furniture: [{ kind: 'shelf', x: 0.2, y: 9.3, w: 4.6, h: 0.5 }] },
+  lab: { x: 13, y: 0, w: 3, d: 4, floor: '#e4e9ec', furniture: [{ kind: 'shelf', x: 13.2, y: 3.4, w: 2.6, h: 0.5 }] },
+  xray: { x: 16, y: 0, w: 3, d: 4, floor: '#e1e4ea', furniture: [{ kind: 'xray', x: 16.2, y: 3.0, w: 2.6, h: 0.9 }] },
+  emergency: {
+    x: 13, y: 4, w: 6, d: 4, floor: '#f3dede',
+    furniture: [{ kind: 'bed', x: 13.5, y: 4.6, w: 2.2, h: 1.2 }, { kind: 'bed', x: 16.3, y: 4.6, w: 2.2, h: 1.2 }],
+  },
+  physio: { x: 13, y: 8, w: 3, d: 4, floor: '#e3eedf', furniture: [{ kind: 'bed', x: 13.3, y: 10.4, w: 2.4, h: 1.2 }] },
+  nutrition: { x: 16, y: 8, w: 3, d: 4, floor: '#eef0dc', furniture: [{ kind: 'shelf', x: 16.2, y: 11.3, w: 2.6, h: 0.5 }] },
+  opdRoom1: { x: 19, y: 0, w: 6, d: 5, floor: '#dbe4ee', furniture: [{ kind: 'bed', x: 23.6, y: 0.4, w: 1.2, h: 2.4 }] },
+  opdRoom2: { x: 25, y: 0, w: 7, d: 5, floor: '#dbe4ee', furniture: [{ kind: 'bed', x: 30.6, y: 0.4, w: 1.2, h: 2.4 }] },
+  mchRegistration: { x: 2, y: 15, w: 4, d: 5, floor: '#eadcc0', furniture: [{ kind: 'counter', x: 2.2, y: 15.2, w: 3.6, h: 0.5 }] },
+  mchTriage: { x: 6, y: 15, w: 4, d: 5, floor: '#e3dccb' },
+  primaryTriage: { x: 13, y: 15, w: 4, d: 5, floor: '#e7e2d8' },
+  opdRegistration: { x: 19, y: 15, w: 4, d: 5, floor: '#eadcc0', furniture: [{ kind: 'counter', x: 19.2, y: 15.2, w: 3.6, h: 0.5 }] },
+  opdTriage: { x: 23, y: 15, w: 4, d: 5, floor: '#e3dccb' },
+  pharmacy: { x: 27, y: 15, w: 5, d: 5, floor: '#e2ecdf', furniture: [{ kind: 'counter', x: 27.2, y: 15.2, w: 4.6, h: 0.5 }] },
 };
 
-const AREAS: Record<'mch' | 'opd' | 'corridor', AreaLayout> = {
-  mch: { label: 'Ruang Menunggu KIA', x: 0, y: 5, w: 13, d: 9, floor: '#f1e8d4' },
-  corridor: { label: 'Laluan', x: 13, y: 5, w: 2, d: 9, floor: '#e7e2d8' },
-  opd: { label: 'Ruang Menunggu OPD', x: 15, y: 5, w: 15, d: 9, floor: '#efe9d9' },
+const AREAS: Record<'lobby' | 'mch' | 'opd' | 'corridor', AreaLayout> = {
+  lobby: { label: 'Lobi', x: 0, y: 15, w: 32, d: 5, floor: '#ece6d8' },
+  mch: { label: 'Ruang Menunggu MCH', x: 0, y: 5, w: 13, d: 10, floor: '#f1e8d4' },
+  corridor: { label: 'Laluan', x: 13, y: 12, w: 6, d: 3, floor: '#e7e2d8' },
+  opd: { label: 'Ruang Menunggu OPD', x: 19, y: 5, w: 13, d: 10, floor: '#efe9d9' },
 };
 
 const overlaps = (t: Tile, r: Rect) => t.x >= r.x && t.x < r.x + r.w && t.y >= r.y && t.y < r.y + r.d;
 
-/** Free tiles of an area in reading order (back to front, left to right), skipping rooms inside it. */
+/** Free tiles of an area in reading order (top to bottom, left to right), skipping rooms inside it. */
 function freeTiles(area: Rect, rooms: Rect[]): Tile[] {
   const tiles: Tile[] = [];
   for (let y = area.y; y < area.y + area.d; y++) {
@@ -102,10 +129,11 @@ export function buildLayout(data: GameData): ClinicLayout {
   };
 
   const rooms: RoomLayout[] = data.stations.map((station) => {
-    const rect = ROOMS[station.id];
-    if (!rect) throw new Error(`No room in the clinic floor plan for station "${station.id}"`);
+    const spec = ROOMS[station.id];
+    if (!spec) throw new Error(`No room in the clinic floor plan for station "${station.id}"`);
+    const { furniture = [], ...rect } = spec;
     const step = rect.w >= 2 * station.seats + 1 ? 2 : 1;
-    if (1 + (station.seats - 1) * step >= rect.w) {
+    if (station.seats > 0 && 1 + (station.seats - 1) * step >= rect.w) {
       throw new Error(`Room for station "${station.id}" is too narrow for ${station.seats} seats`);
     }
     const seats: Tile[] = [];
@@ -116,9 +144,10 @@ export function buildLayout(data: GameData): ClinicLayout {
       chairs.push({ x, y: rect.y + 2 });
     }
     const pool = pools[queueArea(station.id, station.unit)];
-    if (pool.length < QUEUE_SPOTS) throw new Error(`Not enough waiting space for the queue of "${station.id}"`);
-    const queue = pool.splice(0, QUEUE_SPOTS);
-    return { station: station.id, label: station.label, ...rect, seats, chairs, queue };
+    const spots = station.seats > 0 ? QUEUE_SPOTS : SMALL_QUEUE;
+    if (pool.length < spots) throw new Error(`Not enough waiting space for the queue of "${station.id}"`);
+    const queue = pool.splice(0, spots);
+    return { station: station.id, label: station.label, ...rect, seats, chairs, queue, furniture: furniture.map((f) => ({ ...f })) };
   });
 
   return {

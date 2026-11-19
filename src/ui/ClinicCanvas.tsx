@@ -3,7 +3,7 @@ import { nameFor } from '../game/appearance';
 import type { DayController } from '../game/controller';
 import { draw } from '../game/draw';
 import { hitTest, toCanvasPoint, type Hit } from '../game/hit';
-import { fitView, type View } from '../game/iso';
+import { fitView, type View } from '../game/topdown';
 import { buildLayout } from '../game/layout';
 import { createLoop } from '../game/loop';
 import { buildScene, interpolate, targets, type Scene, type Spot } from '../game/scene';

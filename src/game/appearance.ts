@@ -67,6 +67,8 @@ export const PURPOSE_COLOUR: Record<string, string> = {
   child_health: '#2a83cf',
   immunisation: '#5fa8e6',
   opd_general: '#9a8f7a',
+  physio: '#d0822e',
+  nutrition: '#b8a92c',
 };
 
 export const purposeColour = (visitType: string): string => PURPOSE_COLOUR[visitType] ?? '#8a8f96';
