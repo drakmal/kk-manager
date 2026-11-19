@@ -5,15 +5,17 @@ import { useController } from './useController';
 interface Props {
   controller: DayController;
   data: GameData;
-  /** Campaign days: replaces Replay/New day with "Continue to tonight". */
-  onContinue?(): void;
-  dayLabel?: string;
+  /** The day just played, e.g. "Isnin". */
+  dayLabel: string;
+  /** "Continue to Selasa", or "Continue" before the district visit. */
+  continueLabel: string;
+  onContinue(): void;
 }
 
 const LUNCH = { onTime: '🍛 Makan on time', late: '🍛 Late lunch', missed: '🍛 Tak sempat makan' } as const;
 const BALIK = { onTime: '🏠 Balik on time', overtime: '🏠 Overtime' } as const;
 
-export function ReportScreen({ controller, data, onContinue, dayLabel }: Props) {
+export function ReportScreen({ controller, data, dayLabel, continueLabel, onContinue }: Props) {
   const c = useController(controller);
   const r = c.report;
   if (!r) return null;
@@ -27,7 +29,7 @@ export function ReportScreen({ controller, data, onContinue, dayLabel }: Props) 
   return (
     <div class="screen report-screen">
       <header class="screen-head">
-        <h1>End of day · {dayLabel ?? `Hari ${r.seed}`}</h1>
+        <h1>End of day · {dayLabel}</h1>
         <div class="headline">
           <span>{LUNCH[r.lunch.outcome]}</span>
           <span>{BALIK[r.balik.outcome]}</span>
@@ -96,14 +98,7 @@ export function ReportScreen({ controller, data, onContinue, dayLabel }: Props) 
       </div>
 
       <footer class="screen-foot">
-        {onContinue ? (
-          <button type="button" class="primary" onClick={onContinue}>Continue to tonight</button>
-        ) : (
-          <>
-            <button type="button" onClick={() => c.replay()}>Replay this day</button>
-            <button type="button" class="primary" onClick={() => c.newDay()}>New day</button>
-          </>
-        )}
+        <button type="button" class="primary" onClick={onContinue}>{continueLabel}</button>
       </footer>
     </div>
   );

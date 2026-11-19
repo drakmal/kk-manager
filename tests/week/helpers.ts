@@ -1,6 +1,6 @@
 import type { DayReport } from '../../src/sim/index';
 
-/** A minimal day report for campaign tests. */
+/** A minimal day report for week tests. */
 export function fakeReport(over: Partial<DayReport> & { peak?: number; docOnly?: number } = {}): DayReport {
   const { peak = 10, docOnly = 40, ...rest } = over;
   return {

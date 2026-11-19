@@ -3,14 +3,13 @@ import type { DayController } from '../game/controller';
 import type { GameData } from '../sim/index';
 import { ClinicCanvas } from './ClinicCanvas';
 import { Hud } from './Hud';
-import { PausePanel } from './PausePanel';
-import { Toasts } from './Toasts';
+import { PopupDialog } from './PopupDialog';
 import { useController } from './useController';
 
 interface Props {
   controller: DayController;
   data: GameData;
-  dayName?: string;
+  dayName: string;
 }
 
 const KEY = 'kkm.lowGraphics';
@@ -44,8 +43,7 @@ export function GameScreen({ controller, data, dayName }: Props) {
       <Hud controller={c} data={data} lowGraphics={lowGraphics} onLowGraphics={onLowGraphics} dayName={dayName} />
       <div class="stage">
         <ClinicCanvas controller={c} data={data} lowGraphics={lowGraphics} />
-        <Toasts controller={c} data={data} />
-        <PausePanel controller={c} data={data} />
+        {c.popup && <PopupDialog popup={c.popup} onAnswer={(id) => c.answer(id)} />}
       </div>
     </div>
   );

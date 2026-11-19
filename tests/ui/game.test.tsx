@@ -1,14 +1,18 @@
 // @vitest-environment happy-dom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/preact';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/preact';
 import { createController } from '../../src/game/controller';
-import { loadGameData } from '../../src/sim/data';
-import { fmt } from '../../src/sim/time';
+import type { PopupDef } from '../../src/popups/popups';
+import { fmt, loadGameData } from '../../src/sim/index';
 import { GameScreen } from '../../src/ui/GameScreen';
 
 const data = loadGameData();
-const started = (scenario = 'biasa') => {
-  const c = createController(data, 1);
-  c.setScenario(scenario);
+const at = (minute: number): PopupDef => ({
+  id: 'test', due: (c) => c.now === minute,
+  build: (c) => ({ id: `test@${c.now}`, from: 'JM Devi', text: 'Ujian', choices: [{ id: 'ok', label: 'OK' }] }),
+  effect: () => ({}),
+});
+const started = (popups: PopupDef[] = []) => {
+  const c = createController(data, 1, { popups });
   c.start();
   return c;
 };
@@ -19,81 +23,43 @@ afterEach(() => {
 
 test('speed buttons change controller speed; Pause enters paused', () => {
   const c = started();
-  render(<GameScreen controller={c} data={data} />);
+  render(<GameScreen controller={c} data={data} dayName="Isnin" />);
   fireEvent.click(screen.getByRole('button', { name: '2×' }));
   expect(c.clock.speed).toBe(2);
   fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
   expect(c.phase).toBe('paused');
   fireEvent.click(screen.getByRole('button', { name: '1×' }));
   expect(c.phase).toBe('running');
-  expect(c.clock.speed).toBe(1);
 });
 
-test('pause panel apply calls applyChange and shows the effective time', () => {
+test('the HUD shows the day and clock, both bars and the lunch chip; no Finish day', () => {
   const c = started();
-  render(<GameScreen controller={c} data={data} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
-  fireEvent.click(screen.getByLabelText('Straight to doctor: Antenatal (doktor sahaja)'));
-  fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
-  expect(c.sim!.pendingChanges).toHaveLength(1);
-  const at = c.sim!.pendingChanges[0]!.at;
-  expect(screen.getByText(`Takes effect at ${fmt(at)}. Staff satisfaction −5 per change.`)).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
-  expect(c.phase).toBe('running');
-});
-
-test('applying the same roster change twice only charges once', () => {
-  const c = started();
-  render(<GameScreen controller={c} data={data} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
-  fireEvent.change(screen.getByLabelText('Bilik Doktor KIA seat 2'), { target: { value: 'mo3' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
-  expect(c.sim!.pendingChanges).toHaveLength(1);
-  expect(screen.getByText('No changes to apply.')).toBeTruthy();
-});
-
-test('a CCMS toast appears once the clock passes the event start, and can be dismissed', () => {
-  const c = started('ccmsPagi');
-  render(<GameScreen controller={c} data={data} />);
-  expect(screen.queryByText('CCMS down lagi. Tukar ke daftar manual?')).toBeNull();
-  act(() => {
-    c.setSpeed(4);
-    while (c.sim!.now <= 481) c.frame(1000);
-  });
-  expect(screen.getByText('CCMS down lagi. Tukar ke daftar manual?')).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Switch to manual registration' }));
-  expect(screen.queryByText('CCMS down lagi. Tukar ke daftar manual?')).toBeNull();
-});
-
-test('the HUD shows the clock, both bars and the lunch chip', () => {
-  const c = started();
-  render(<GameScreen controller={c} data={data} />);
-  expect(screen.getByText(new RegExp(`Isnin ${fmt(c.sim!.now)}`))).toBeTruthy();
+  render(<GameScreen controller={c} data={data} dayName="Khamis" />);
+  expect(screen.getByText(`Khamis ${fmt(c.sim!.now)}`)).toBeTruthy();
   expect(screen.getByLabelText('Patient satisfaction')).toBeTruthy();
   expect(screen.getByLabelText('Staff satisfaction')).toBeTruthy();
   expect(screen.getByText('🍛 13:00')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Finish day' })).toBeNull();
 });
 
-test('Finish day goes to the report phase', () => {
-  const c = started();
-  render(<GameScreen controller={c} data={data} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Finish day' }));
+test('Skip ahead stops at a popup, which shows over the clinic; answering it lets the day go on', () => {
+  const c = started([at(500)]);
+  render(<GameScreen controller={c} data={data} dayName="Isnin" />);
+  fireEvent.click(screen.getByRole('button', { name: 'Skip ahead' }));
+  const dialog = screen.getByRole('dialog', { name: 'JM Devi' });
+  expect((screen.getByRole('button', { name: 'Skip ahead' }) as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(within(dialog).getByRole('button', { name: 'OK' }));
+  expect(screen.queryByRole('dialog')).toBeNull();
+  act(() => c.skipAhead());
   expect(c.phase).toBe('report');
 });
 
 test('low graphics toggle survives a localStorage that throws', () => {
   vi.spyOn(globalThis, 'localStorage', 'get').mockImplementation(() => { throw new Error('blocked'); });
   const c = started();
-  render(<GameScreen controller={c} data={data} />);
+  render(<GameScreen controller={c} data={data} dayName="Isnin" />);
   const box = screen.getByLabelText('Low graphics') as HTMLInputElement;
   expect(box.checked).toBe(false);
   fireEvent.click(box);
   expect((screen.getByLabelText('Low graphics') as HTMLInputElement).checked).toBe(true);
-});
-
-test('the HUD clock uses the day name it is given', () => {
-  const c = started();
-  render(<GameScreen controller={c} data={data} dayName="Khamis" />);
-  expect(screen.getByText(new RegExp(`Khamis ${fmt(c.sim!.now)}`))).toBeTruthy();
 });

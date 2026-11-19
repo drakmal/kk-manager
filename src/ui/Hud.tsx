@@ -7,7 +7,7 @@ interface Props {
   data: GameData;
   lowGraphics: boolean;
   onLowGraphics(on: boolean): void;
-  dayName?: string;
+  dayName: string;
 }
 
 const LUNCH_TEXT = {
@@ -19,11 +19,12 @@ const LUNCH_TEXT = {
 
 const SPEEDS: Speed[] = [1, 2, 4];
 
-export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName = 'Isnin' }: Props) {
+export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName }: Props) {
   const sim = c.sim;
   if (!sim) return null;
   const scores = liveScores(sim, data);
   const paused = c.phase === 'paused';
+  const asking = c.popup !== null;
   const setSpeed = (s: Speed) => {
     c.setSpeed(s);
     if (paused) c.resume();
@@ -44,7 +45,7 @@ export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName =
         {Math.round(scores.patient)}
       </span>
       <span class="bar">
-        HCW
+        Staf
         <meter aria-label="Staff satisfaction" min={0} max={100} low={40} high={70} optimum={100} value={scores.hcw} />
         {Math.round(scores.hcw)}
       </span>
@@ -54,7 +55,9 @@ export function Hud({ controller: c, data, lowGraphics, onLowGraphics, dayName =
         <input type="checkbox" checked={lowGraphics} onChange={(e) => onLowGraphics((e.currentTarget as HTMLInputElement).checked)} />
         Low graphics
       </label>
-      <button type="button" onClick={() => c.finishNow()}>Finish day</button>
+      <button type="button" disabled={asking} title="Runs to the next popup or the end of the day" onClick={() => c.skipAhead()}>
+        Skip ahead
+      </button>
     </div>
   );
 }

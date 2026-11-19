@@ -1,30 +1,35 @@
 // @vitest-environment happy-dom
 import { cleanup, fireEvent, render, screen } from '@testing-library/preact';
-import { createCampaign, dayPlanFor, endDay } from '../../src/campaign/campaign';
-import { resumeCampaign } from '../../src/campaign/controller';
-import { memoryStorage } from '../../src/campaign/saves';
 import { loadGameData } from '../../src/sim/index';
 import { DistrictScreen } from '../../src/ui/DistrictScreen';
-import { fakeReport } from '../campaign/helpers';
+import { startWeek, type WeekController } from '../../src/week/controller';
+import { memoryStorage } from '../../src/week/storage';
 
 const data = loadGameData();
-const now = () => '2026-11-19T21:00:00.000Z';
 afterEach(cleanup);
 
-test('the district screen shows the grade, numbers and remarks, then continues to endless mode', () => {
-  let state = createCampaign(data, 1);
-  while (state.day < 10) state = endDay(data, state, fakeReport(), dayPlanFor(data, state));
-  const c = resumeCampaign(data, memoryStorage(), { version: 1, slot: 1, savedAt: now(), state }, now);
-  for (const m of c.state.messages) c.choose(m.id, m.choices.find((x) => !x.disabledReason)!.id);
-  c.toPlan();
-  c.day!.start();
-  c.day!.finishNow();
-  c.continueAfterReport();
-  render(<DistrictScreen campaign={c} />);
-  const r = c.review!;
+function playWeek(w: WeekController) {
+  for (let i = 0; i < 5; i++) {
+    while (w.morning) w.answerMorning(w.morning.choices[0]!.id);
+    const d = w.day!;
+    while (d.phase !== 'report') {
+      d.skipAhead();
+      if (d.popup) d.answer(d.popup.choices[0]!.id);
+    }
+    w.continueAfterReport();
+  }
+}
+
+test('the district screen shows the week, grade, numbers and remarks, then plays another week', () => {
+  const w = startWeek(data, memoryStorage(), 7, () => 'now');
+  playWeek(w);
+  render(<DistrictScreen week={w} />);
+  const r = w.review!;
+  expect(screen.getByRole('heading', { name: /Minggu 1/ })).toBeTruthy();
   expect(screen.getByLabelText('Grade').textContent).toBe(r.grade);
   for (const line of r.lines) expect(screen.getByText(line)).toBeTruthy();
-  expect(screen.getByText(`Lunch on time: ${r.lunchOnTime} of 10 days`)).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: 'Continue (endless mode)' }));
-  expect(c.phase).toBe('night');
+  expect(screen.getByText(`Lunch on time: ${r.lunchOnTime} of 5 days`)).toBeTruthy();
+  expect(screen.getByText('Medium (KK Jenis 3): coming soon')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Play another week' }));
+  expect(w.state.week).toBe(2);
 });

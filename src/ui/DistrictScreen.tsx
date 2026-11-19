@@ -1,16 +1,17 @@
-import type { CampaignController } from '../campaign/controller';
+import type { WeekController } from '../week/controller';
+import { WEEK_DAYS } from '../week/week';
 import { useController } from './useController';
 
-export function DistrictScreen({ campaign }: { campaign: CampaignController }) {
-  const c = useController(campaign);
-  const r = c.review;
+export function DistrictScreen({ week }: { week: WeekController }) {
+  const w = useController(week);
+  const r = w.review;
   if (!r) return null;
 
   return (
     <div class="screen district-screen">
       <header class="screen-head">
-        <h1>Lawatan Pegawai Kesihatan Daerah</h1>
-        <p class="hint">The district officer has read your two weeks of reports.</p>
+        <h1>Lawatan Pegawai Kesihatan Daerah · Minggu {w.state.week}</h1>
+        <p class="hint">The district officer has read this week’s reports.</p>
       </header>
       <div class="district-grid">
         <section class="card grade-card">
@@ -18,12 +19,12 @@ export function DistrictScreen({ campaign }: { campaign: CampaignController }) {
           <div class={`grade grade-${r.grade}`} aria-label="Grade">{r.grade}</div>
         </section>
         <section class="card">
-          <h2>Two weeks in numbers</h2>
+          <h2>The week in numbers</h2>
           <ul>
             <li>Patient satisfaction (mean): {r.patient}</li>
             <li>Staff satisfaction (mean): {r.hcw}</li>
-            <li>Lunch on time: {r.lunchOnTime} of 10 days</li>
-            <li>Overtime: {r.overtimeDays} of 10 days</li>
+            <li>Lunch on time: {r.lunchOnTime} of {WEEK_DAYS} days</li>
+            <li>Overtime: {r.overtimeDays} of {WEEK_DAYS} days</li>
           </ul>
         </section>
       </div>
@@ -32,7 +33,8 @@ export function DistrictScreen({ campaign }: { campaign: CampaignController }) {
         {r.lines.map((line) => <p key={line}>{line}</p>)}
       </section>
       <footer class="screen-foot">
-        <button type="button" class="primary" onClick={() => c.continueAfterDistrict()}>Continue (endless mode)</button>
+        <span class="hint">Medium (KK Jenis 3): coming soon</span>
+        <button type="button" class="primary" onClick={() => w.playAnotherWeek()}>Play another week</button>
       </footer>
     </div>
   );
